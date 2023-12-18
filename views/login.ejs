@@ -1,0 +1,17 @@
+<script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+<h1>Login</h1>
+<% if (messages.error) { %>
+    <%= messages.error %>
+<% } %>
+<form action="/login" method="POST">
+    <div>
+        <label for="email">Email</label>
+        <input type="email" name="email" id="email" placeholder="Enter your email" required>
+    </div>
+    <div>
+        <label for="password">Password</label>
+        <input type="password" name="password" id="password" placeholder="Enter your password" required>
+    </div>
+    <button type="submit">Login</button>
+</form>
+<a href="/register">Register</a>

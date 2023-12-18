@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat App</title>
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+</head>
+<body>
+    <h1>Hi <%= name %> Welcome To The Chatroom</h1>
+    <main class="main-section">
+        <div class="messages-container">
+            <ul class="messages-ul">
+                <% for (let i = 0; i < messages.length; i++) { %>
+                    <div>
+                        <li>Sent by <%= messages[i].name %> on <%= messages[i].sentOn %></li>
+                        <li><%= messages[i].message %></li>
+                    </div>
+                    <form action="/delete-message/<%= messages[i].id %>?_method=DELETE" method="POST">
+                        <button type="submit">Delete</button>
+                    </form>
+                <% } %>
+            </ul>
+            <form action="/" method="POST" class="messages-form">
+                <div>
+                    <label for="message">Enter a Message</label>
+                    <input type="text" name="message" id="message" placeholder="Enter a message" required>
+                    <button type="submit">Submit</button>
+                </div>
+            </form>
+        </div>
+        <div class="screenshare-container">
+            <video id="localScreen" style="display: none; width: 75vw; height: auto;" autoplay muted></video>
+            <button id="startScreenShare">Start Screen Share</button>
+            <button id="stopScreenShare" style="display: none;">Stop Screen Share</button>
+        </div>
+        <script>
+            let screenStream;
+
+            document.getElementById('startScreenShare').addEventListener('click', () => {
+                navigator.mediaDevices.getDisplayMedia({ video:true })
+                    .then(stream => {
+                        screenStream = stream;
+
+                        document.getElementById('localScreen').srcObject = stream;
+                        document.getElementById('localScreen').style.display = 'block';
+
+                        document.getElementById('startScreenShare').style.display = 'none';
+                        document.getElementById('stopScreenShare').style.display = 'block';
+
+                        screenStream.getVideoTracks()[0].onended = () => {
+                            stopScreenShare();
+                        }
+                    })
+                    .catch(error => console.log('Error starting the screen share: ', error));
+            });
+
+            document.getElementById('stopScreenShare').addEventListener('click', () => {
+                stopScreenShare();
+            });
+
+            function stopScreenShare() {
+                screenStream.getTracks().forEach(track => track.stop());
+
+                screenStream = null;
+
+                document.getElementById('startScreenShare').style.display = 'block';
+                document.getElementById('stopScreenShare').style.display = 'none';
+                document.getElementById('localScreen').style.display = 'none';
+            }
+
+        </script>
+    </main>
+    <form action="/logout?_method=DELETE" method="POST">
+        <button type="submit">Log Out</button>
+    </form>
+</body>
+</html>
