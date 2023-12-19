@@ -7,10 +7,14 @@ import flash from 'express-flash';
 import session from 'express-session';
 import methodOverride from 'method-override';
 import mongoose from 'mongoose';
+import http, { createServer } from 'http';
+import { Server } from 'socket.io';
 
 dotenv.config();
 
 const app = express();
+const server = createServer(app);
+const io = new Server(server);
 
 initializePassport(
     passport, 
@@ -150,6 +154,14 @@ function checkNotAuthenticated(req, res, next) {
     next()
 }
 
-app.listen(3000, () => {
+io.on('connection', (socket) => {
+    console.log('A User Connected')
+
+    socket.on('sendPeerId', (peerId) => {
+        socket.broadcast.emit('receivePeerId', peerId);
+    });
+})
+
+server.listen(3000, () => {
     console.log('Listening on port 3000');
 });

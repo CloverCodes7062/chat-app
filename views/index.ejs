@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat App</title>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 </head>
 <body>
     <h1>Hi <%= name %> Welcome To The Chatroom</h1>
@@ -31,44 +32,92 @@
         </div>
         <div class="screenshare-container">
             <video id="localScreen" style="display: none; width: 75vw; height: auto;" autoplay muted></video>
+            <video id="remoteVideo" style="display: none; width: 75vw; height: auto;" autoplay muted></video>
             <button id="startScreenShare">Start Screen Share</button>
             <button id="stopScreenShare" style="display: none;">Stop Screen Share</button>
         </div>
         <script>
             let screenStream;
+            let peerId;
+            let remotePeerId;
+            const socket = io();
+        
+            let peer = new Peer();
+        
+            peer.on('open', (id) => {
+                console.log('My peer Id is: ' + id);
+                peerId = id;
+                socket.emit('sendPeerId', peerId);
+            });
+        
+            socket.on('receivePeerId', (receivedPeerId) => {
+                console.log('Received peer ID: ' + receivedPeerId);
+                remotePeerId = receivedPeerId;
+            });
+
+            peer.on('call', (call) => {
+                console.log('Incoming Call');
+                
+                call.answer();
+
+                call.on('stream', (stream) => {
+                    console.log('stream', stream);
+
+                    const remoteVideo = document.getElementById('remoteVideo');
+                    remoteVideo.srcObject = stream;
+                    remoteVideo.style.display = 'block';
+                    console.log('remoteVideo', remoteVideo);
+                });
+            })
 
             document.getElementById('startScreenShare').addEventListener('click', () => {
-                navigator.mediaDevices.getDisplayMedia({ video:true })
+                navigator.mediaDevices.getDisplayMedia({ video: true })
                     .then(stream => {
                         screenStream = stream;
-
+        
                         document.getElementById('localScreen').srcObject = stream;
                         document.getElementById('localScreen').style.display = 'block';
-
+        
                         document.getElementById('startScreenShare').style.display = 'none';
                         document.getElementById('stopScreenShare').style.display = 'block';
-
+        
                         screenStream.getVideoTracks()[0].onended = () => {
                             stopScreenShare();
+                        };
+        
+                        if (remotePeerId) {
+                            shareScreen();
                         }
                     })
                     .catch(error => console.log('Error starting the screen share: ', error));
             });
-
+        
             document.getElementById('stopScreenShare').addEventListener('click', () => {
                 stopScreenShare();
             });
-
+        
             function stopScreenShare() {
                 screenStream.getTracks().forEach(track => track.stop());
-
+        
                 screenStream = null;
-
+        
                 document.getElementById('startScreenShare').style.display = 'block';
                 document.getElementById('stopScreenShare').style.display = 'none';
                 document.getElementById('localScreen').style.display = 'none';
+        
+                if (peer && peer.destroy) {
+                    peer.destroy();
+        
+                    peer = new Peer();
+                }
             }
+        
+            function shareScreen() {
+                console.log('shareScreen Called');
 
+                const call = peer.call(remotePeerId, screenStream);
+                console.log('Remote Peer ID, Stream', remotePeerId, screenStream);
+            }
         </script>
     </main>
     <form action="/logout?_method=DELETE" method="POST">
