@@ -80,12 +80,19 @@ app.post('/', checkAuthenticated, async (req, res) => {
         await message.save()
             .then(() => {
                 console.log('Message Saved to DB');
-                res.redirect('/')
+                res.redirect('/');
             })
             .catch((e) => console.error('Error', e));    
     } else {
         console.log('No Message');
     }
+
+    const messages = await Messages.find().exec()
+        .then(messages => messages.map(message => { 
+            return { sentBy: message.sentBy, sentOn: message.sentOn, message: message.message, id: message._id, name: message.name }
+        }));
+
+    io.emit('newMessage', messages);
 });
 
 app.delete('/delete-message/:id', checkAuthenticated, async (req, res) => {

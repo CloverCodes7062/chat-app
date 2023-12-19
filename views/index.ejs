@@ -11,22 +11,22 @@
     <h1>Hi <%= name %> Welcome To The Chatroom</h1>
     <main class="main-section">
         <div class="messages-container">
-            <ul class="messages-ul">
+            <ul id="messagesList" class="messages-ul">
                 <% for (let i = 0; i < messages.length; i++) { %>
                     <div>
                         <li>Sent by <%= messages[i].name %> on <%= messages[i].sentOn %></li>
                         <li><%= messages[i].message %></li>
                     </div>
-                    <form action="/delete-message/<%= messages[i].id %>?_method=DELETE" method="POST">
+                    <form class="preventDefault" action="/delete-message/<%= messages[i].id %>?_method=DELETE" method="POST">
                         <button type="submit">Delete</button>
                     </form>
                 <% } %>
             </ul>
-            <form action="/" method="POST" class="messages-form">
+            <form class="preventDefault" action="/" method="POST" class="messages-form">
                 <div>
                     <label for="message">Enter a Message</label>
                     <input type="text" name="message" id="message" placeholder="Enter a message" required>
-                    <button type="submit">Submit</button>
+                    <button type="submit" id="form-submit-btn-2">Submit</button>
                 </div>
             </form>
         </div>
@@ -53,6 +53,29 @@
             socket.on('receivePeerId', (receivedPeerId) => {
                 console.log('Received peer ID: ' + receivedPeerId);
                 remotePeerId = receivedPeerId;
+            });
+
+            socket.on('newMessage', (messages) => {
+                console.log('New Message Event Triggered');
+
+                const messagesList = document.getElementById('messagesList');
+                messagesList.innerHTML = '';
+
+                messages.forEach((message) => {
+                    const listItem = document.createElement('div');
+                    listItem.innerHTML = `
+                        <li>Sent By ${message.name} on ${message.sentOn}</li>
+                        <li>${message.message}</li>
+                    `;
+                    messagesList.appendChild(listItem);
+
+                    const deleteForm = document.createElement('form');
+                    deleteForm.action = `/delete-message/${message.id}?_method=DELETE`;
+                    deleteForm.method = 'POST';
+                    deleteForm.innerHTML = `<button type="submit">Delete</button>`;
+                    listItem.appendChild(deleteForm);
+                });
+
             });
 
             peer.on('call', (call) => {
@@ -117,7 +140,7 @@
 
                 const call = peer.call(remotePeerId, screenStream);
                 console.log('Remote Peer ID, Stream', remotePeerId, screenStream);
-            }
+            } 
         </script>
     </main>
     <form action="/logout?_method=DELETE" method="POST">
