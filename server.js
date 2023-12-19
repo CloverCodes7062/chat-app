@@ -42,6 +42,7 @@ const Messages = mongoose.model('Messages', messageSchema);
 
 app.set('view-engine', 'ejs');
 
+app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(flash());
 app.use(session({
@@ -64,35 +65,35 @@ app.get('/', checkAuthenticated, async (req, res) => {
 });
 
 app.post('/', checkAuthenticated, async (req, res) => {
-    const reqMessage = req.body.message;
-    const user = await req.user;
+    try {
+        const reqMessage = req.body.message;
+        const user = await req.user;
+    
+        console.log('user', user.email);
+    
+        const message = new Messages({
+            sentOn: new Date(),
+            sentBy: user.email,
+            name: user.name,
+            message: reqMessage,
+        });
+    
+        if (message) {
+            await message.save()
+                .then(() => {
+                    console.log('Message Saved to DB');
+                })
+                .catch((e) => console.error('Error', e));    
+        } else {
+            console.log('No Message');
+        }
+    
+        io.emit('newMessage', message); 
 
-    console.log('user', user.email);
-
-    const message = new Messages({
-        sentOn: new Date(),
-        sentBy: user.email,
-        name: user.name,
-        message: reqMessage,
-    });
-
-    if (message) {
-        await message.save()
-            .then(() => {
-                console.log('Message Saved to DB');
-                res.redirect('/');
-            })
-            .catch((e) => console.error('Error', e));    
-    } else {
-        console.log('No Message');
+        res.status(200).json({ success: true, message: 'Message Saved To DB' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Server Error Saving Message to DB' });
     }
-
-    const messages = await Messages.find().exec()
-        .then(messages => messages.map(message => { 
-            return { sentBy: message.sentBy, sentOn: message.sentOn, message: message.message, id: message._id, name: message.name }
-        }));
-
-    io.emit('newMessage', messages);
 });
 
 app.delete('/delete-message/:id', checkAuthenticated, async (req, res) => {

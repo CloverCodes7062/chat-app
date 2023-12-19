@@ -6,6 +6,7 @@
     <title>Chat App</title>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 <body>
     <h1>Hi <%= name %> Welcome To The Chatroom</h1>
@@ -22,11 +23,11 @@
                     </form>
                 <% } %>
             </ul>
-            <form class="preventDefault" action="/" method="POST" class="messages-form">
+            <form id="preventDefault-POST" action="/" method="POST">
                 <div>
                     <label for="message">Enter a Message</label>
                     <input type="text" name="message" id="message" placeholder="Enter a message" required>
-                    <button type="submit" id="form-submit-btn-2">Submit</button>
+                    <button type="submit">Submit</button>
                 </div>
             </form>
         </div>
@@ -37,6 +38,26 @@
             <button id="stopScreenShare" style="display: none;">Stop Screen Share</button>
         </div>
         <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const sendMsgForm = document.getElementById('preventDefault-POST');
+
+                sendMsgForm.addEventListener('submit', async (event) => {
+                    event.preventDefault();
+
+                    const messageInput = document.getElementById('message');
+                    const message = messageInput.value;
+                    console.log('Message to Send', message);
+
+                    axios.post('/', { message: message })
+                        .then(() => {
+                            console.log('Message Successfully Sent To Backend');
+                            messageInput.value = '';
+                        })
+                        .catch((error) => console.log('Erroing Sending Message', error));
+
+                });
+            });
+
             let screenStream;
             let peerId;
             let remotePeerId;
@@ -55,26 +76,22 @@
                 remotePeerId = receivedPeerId;
             });
 
-            socket.on('newMessage', (messages) => {
+            socket.on('newMessage', (message) => {
                 console.log('New Message Event Triggered');
-
+                console.log(message);
                 const messagesList = document.getElementById('messagesList');
-                messagesList.innerHTML = '';
+                const listItem = document.createElement('div');
+                listItem.innerHTML = `
+                    <li>Sent By ${message.name} on ${message.sentOn}</li>
+                    <li>${message.message}</li>
+                `;
+                messagesList.appendChild(listItem);
 
-                messages.forEach((message) => {
-                    const listItem = document.createElement('div');
-                    listItem.innerHTML = `
-                        <li>Sent By ${message.name} on ${message.sentOn}</li>
-                        <li>${message.message}</li>
-                    `;
-                    messagesList.appendChild(listItem);
-
-                    const deleteForm = document.createElement('form');
-                    deleteForm.action = `/delete-message/${message.id}?_method=DELETE`;
-                    deleteForm.method = 'POST';
-                    deleteForm.innerHTML = `<button type="submit">Delete</button>`;
-                    listItem.appendChild(deleteForm);
-                });
+                const deleteForm = document.createElement('form');
+                deleteForm.action = `/delete-message/${message._id}?_method=DELETE`;
+                deleteForm.method = 'POST';
+                deleteForm.innerHTML = `<button type="submit">Delete</button>`;
+                messagesList.appendChild(deleteForm);
 
             });
 
