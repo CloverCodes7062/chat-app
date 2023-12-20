@@ -9,13 +9,29 @@
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 <body>
+    <%
+    function formatDate(sentOn) {
+        const options = {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: 'numeric',
+            second: 'numeric',
+            hour12: true
+        };
+
+        const formattedDate = new Date(sentOn).toLocaleString(undefined, options);
+        return formattedDate;
+    }
+    %>
     <h1>Hi <%= name %> Welcome To The Chatroom</h1>
     <main class="main-section">
         <div class="messages-container">
             <ul id="messagesList" class="messages-ul">
                 <% for (let i = 0; i < messages.length; i++) { %>
                     <div>
-                        <li>Sent by <%= messages[i].name %> on <%= messages[i].sentOn %></li>
+                        <li>Sent by <%= messages[i].name %> on <%= formatDate(messages[i].sentOn) %></li>
                         <li><%= messages[i].message %></li>
                     </div>
                     <form class="preventDefault" action="/delete-message/<%= messages[i].id %>?_method=DELETE" method="POST">
@@ -33,11 +49,27 @@
         </div>
         <div class="screenshare-container">
             <video id="localScreen" style="display: none; width: 75vw; height: auto;" autoplay muted></video>
+            <ul class="remote-video-list"></ul>
             <video id="remoteVideo" style="display: none; width: 75vw; height: auto;" autoplay muted></video>
             <button id="startScreenShare">Start Screen Share</button>
             <button id="stopScreenShare" style="display: none;">Stop Screen Share</button>
         </div>
         <script>
+            function formatDate(sentOn) {
+                const options = {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: 'numeric',
+                    minute: 'numeric',
+                    second: 'numeric',
+                    hour12: true
+                };
+
+                const formattedDate = new Date(sentOn).toLocaleString(undefined, options);
+                return formattedDate;
+            }
+
             document.addEventListener('DOMContentLoaded', () => {
                 const sendMsgForm = document.getElementById('preventDefault-POST');
 
@@ -61,6 +93,7 @@
             let screenStream;
             let peerId;
             let remotePeerId;
+            let remotePeerIds = [];
             const socket = io();
         
             let peer = new Peer();
@@ -68,21 +101,46 @@
             peer.on('open', (id) => {
                 console.log('My peer Id is: ' + id);
                 peerId = id;
-                socket.emit('sendPeerId', peerId);
+                socket.emit('broadcastPeerId', peerId);
             });
         
             socket.on('receivePeerId', (receivedPeerId) => {
-                console.log('Received peer ID: ' + receivedPeerId);
+                console.log('Received peer Id: ' + receivedPeerId);
                 remotePeerId = receivedPeerId;
+
+                if (remotePeerId in remotePeerIds) {
+                    console.log('Remote Peer Id already in remotePeerIds');
+                } else {
+                    console.log('Pushing remotePeerId to remotePeerIds');
+                    remotePeerIds.push(remotePeerId);
+                }
+
+                console.log('Broadcasting Id (recieved a new peers id)', peerId);
+                socket.emit('broadcastBackPeerId', peerId);
+                
+                console.log('remotePeerIds', remotePeerIds);
+            });
+
+            socket.on('recieveBroadcastedId', (remotePeerId) => {
+                if (remotePeerId in remotePeerIds) {
+                    console.log('Remote Peer Id already in remotePeerIds');
+                } else {
+                    console.log('Pushing remotePeerId to remotePeerIds');
+                    remotePeerIds.push(remotePeerId);
+                }
+                console.log('remotePeerIds', remotePeerIds);
             });
 
             socket.on('newMessage', (message) => {
                 console.log('New Message Event Triggered');
-                console.log(message);
+
                 const messagesList = document.getElementById('messagesList');
                 const listItem = document.createElement('div');
+
+                const formattedDate = formatDate(message.sentOn);
+
                 listItem.innerHTML = `
-                    <li>Sent By ${message.name} on ${message.sentOn}</li>
+                    <li>Sent By ${message.name} on ${formattedDate}</li>
                     <li>${message.message}</li>
                 `;
                 messagesList.appendChild(listItem);

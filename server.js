@@ -165,9 +165,13 @@ function checkNotAuthenticated(req, res, next) {
 io.on('connection', (socket) => {
     console.log('A User Connected')
 
-    socket.on('sendPeerId', (peerId) => {
+    socket.on('broadcastPeerId', (peerId) => {
         socket.broadcast.emit('receivePeerId', peerId);
     });
+
+    socket.on('broadcastBackPeerId', (peerId) => {
+        socket.broadcast.emit('recieveBroadcastedId', peerId);
+    })
 })
 
 server.listen(3000, () => {
