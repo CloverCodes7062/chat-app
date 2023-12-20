@@ -40,7 +40,9 @@
         <div class="screenshare-container">
             <video id="localScreen" style="display: none; width: 75vw; height: auto;" autoplay muted></video>
             <ul class="remote-video-list"></ul>
-            <video id="remoteVideo" style="display: none; width: 75vw; height: auto;" autoplay muted></video>
+            <div id="remoteVideosContainer">
+                <video id="remoteVideo" style="display: none; width: 75vw; height: auto;" autoplay muted></video>
+            </div>
             <button id="startScreenShare">Start Screen Share</button>
             <button id="stopScreenShare" style="display: none;">Stop Screen Share</button>
         </div>
