@@ -28,17 +28,7 @@
     <h1>Hi <%= name %> Welcome To The Chatroom</h1>
     <main class="main-section">
         <div class="messages-container">
-            <ul id="messagesList" class="messages-ul">
-                <% for (let i = 0; i < messages.length; i++) { %>
-                    <div>
-                        <li>Sent by <%= messages[i].name %> on <%= formatDate(messages[i].sentOn) %></li>
-                        <li><%= messages[i].message %></li>
-                    </div>
-                    <form class="preventDefault-DELETE" action="/delete-message?id=<%= messages[i].id %>">
-                        <button type="submit">Delete</button>
-                    </form>
-                <% } %>
-            </ul>
+            <ul id="messagesList" class="messages-ul"></ul>
             <form id="preventDefault-POST" action="/" method="POST">
                 <div>
                     <label for="message">Enter a Message</label>
@@ -166,10 +156,10 @@
                             console.error('Server Error Delete Message', error);
                         });
                 });
-                messagesList.appendChild(deleteForm);
+                listItem.appendChild(deleteForm);
             });
 
-            socket.on('resetChatMessages', (messages) => {
+            socket.on('resetChatMessages', async (messages) => {
                 const messagesList = document.getElementById('messagesList');
                 messagesList.innerHTML = '';
                 messages.forEach((message) => {
@@ -183,28 +173,38 @@
                     `;
                     messagesList.appendChild(listItem);
 
-                    const deleteForm = document.createElement('form');
-                    deleteForm.action = `/delete-message?id=${message.id}`;
-                    deleteForm.className = 'preventDefault-DELETE'
-                    deleteForm.innerHTML = `<button type="submit">Delete</button>`;
-                    deleteForm.addEventListener('submit', (event) => {
-                        event.preventDefault();
-                        const delUrl = deleteForm.action;
-                        console.log('delUrl', delUrl);
+                    axios.get(`/canDelete?id=${message.id}`)
+                        .then((response) => {
+                            if (response.status == 204) {
+                                const deleteForm = document.createElement('form');
+                                deleteForm.action = `/delete-message?id=${message.id}`;
+                                deleteForm.className = 'preventDefault-DELETE'
+                                deleteForm.innerHTML = `<button type="submit">Delete</button>`;
+                                deleteForm.addEventListener('submit', (event) => {
+                                    event.preventDefault();
+                                    const delUrl = deleteForm.action;
+                                    console.log('delUrl', delUrl);
 
-                        axios.delete(delUrl)
-                            .then(() => {
-                                console.log('Message Deleted from DB');
-                            })
-                            .catch((error) => {
-                                console.error('Server Error Delete Message', error);
-                            });
-                    });
-                    messagesList.appendChild(deleteForm);
-
+                                    axios.delete(delUrl)
+                                        .then(() => {
+                                            console.log('Message Deleted from DB');
+                                        })
+                                        .catch((error) => {
+                                            console.error('Server Error Delete Message', error);
+                                        });
+                                });
+                                listItem.appendChild(deleteForm);
+                            } else {
+                                console.error('.status not 204', response.status);
+                            }
+                        })
+                        .catch((error) => {
+                            console.error('Error Checking canDelete', error);
+                        })
                 });
-
             });
+
+            socket.emit('getNewMessages');
 
             peer.on('call', (call) => {
                 console.log('Incoming Call');

@@ -56,12 +56,8 @@ app.use(methodOverride('_method'));
 
 app.get('/', checkAuthenticated, async (req, res) => {
     const user = await req.user;
-    const messages = await Messages.find().exec()
-        .then(messages => messages.map(message => { 
-            return { sentBy: message.sentBy, sentOn: message.sentOn, message: message.message, id: message._id, name: message.name }
-        }));
 
-    res.render('index.ejs', { name: user.name, messages: messages });
+    res.render('index.ejs', { name: user.name });
 });
 
 app.post('/', checkAuthenticated, async (req, res) => {
@@ -200,6 +196,16 @@ io.on('connection', (socket) => {
 
     socket.on('sendBackPeerId', (peerId) => {
         socket.broadcast.emit('recieveSentBackPeerId', peerId);
+    })
+
+    socket.on('getNewMessages', async () => {
+        console.log('Get New Messages Called');
+        const messages = await Messages.find().exec()
+        .then(messages => messages.map(message => { 
+            return { sentBy: message.sentBy, sentOn: message.sentOn, message: message.message, id: message._id, name: message.name }
+        }));
+    
+        io.emit('resetChatMessages', messages);
     })
 })
 
