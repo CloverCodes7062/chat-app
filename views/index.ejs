@@ -93,7 +93,6 @@
             let screenStream;
             let peerId;
             let remotePeerId;
-            let remotePeerIds = [];
             const socket = io();
         
             let peer = new Peer();
@@ -107,28 +106,6 @@
             socket.on('receivePeerId', (receivedPeerId) => {
                 console.log('Received peer Id: ' + receivedPeerId);
                 remotePeerId = receivedPeerId;
-
-                if (remotePeerId in remotePeerIds) {
-                    console.log('Remote Peer Id already in remotePeerIds');
-                } else {
-                    console.log('Pushing remotePeerId to remotePeerIds');
-                    remotePeerIds.push(remotePeerId);
-                }
-
-                console.log('Broadcasting Id (recieved a new peers id)', peerId);
-                socket.emit('broadcastBackPeerId', peerId);
-                
-                console.log('remotePeerIds', remotePeerIds);
-            });
-
-            socket.on('recieveBroadcastedId', (remotePeerId) => {
-                if (remotePeerId in remotePeerIds) {
-                    console.log('Remote Peer Id already in remotePeerIds');
-                } else {
-                    console.log('Pushing remotePeerId to remotePeerIds');
-                    remotePeerIds.push(remotePeerId);
-                }
-                console.log('remotePeerIds', remotePeerIds);
             });
 
             socket.on('newMessage', (message) => {
