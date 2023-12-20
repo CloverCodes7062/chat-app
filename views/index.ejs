@@ -34,7 +34,7 @@
                         <li>Sent by <%= messages[i].name %> on <%= formatDate(messages[i].sentOn) %></li>
                         <li><%= messages[i].message %></li>
                     </div>
-                    <form class="preventDefault" action="/delete-message/<%= messages[i].id %>?_method=DELETE" method="POST">
+                    <form class="preventDefault-DELETE" action="/delete-message?id=<%= messages[i].id %>">
                         <button type="submit">Delete</button>
                     </form>
                 <% } %>
@@ -72,6 +72,7 @@
 
             document.addEventListener('DOMContentLoaded', () => {
                 const sendMsgForm = document.getElementById('preventDefault-POST');
+                const deleteMsgForms = document.getElementsByClassName('preventDefault-DELETE');
 
                 sendMsgForm.addEventListener('submit', async (event) => {
                     event.preventDefault();
@@ -85,9 +86,26 @@
                             console.log('Message Successfully Sent To Backend');
                             messageInput.value = '';
                         })
-                        .catch((error) => console.log('Erroing Sending Message', error));
-
+                        .catch((error) => console.log('Erroring Sending Message', error));
                 });
+
+                for (let deleteMsgForm of deleteMsgForms) {
+                    deleteMsgForm.addEventListener('submit', async (event) => {
+                        event.preventDefault();
+
+                        const delUrl = deleteMsgForm.action;
+                        console.log('delUrl', delUrl);
+
+                        axios.delete(delUrl)
+                            .then(() => {
+                                console.log('Message Deleted from DB');
+                            })
+                            .catch((error) => {
+                                console.error('Server Error Delete Message', error);
+                            });
+                    });
+                }
+
             });
 
             let screenStream;
@@ -100,15 +118,24 @@
             peer.on('open', (id) => {
                 console.log('My peer Id is: ' + id);
                 peerId = id;
+                console.log('Sending peerId to other peers (peer.on(open))');
                 socket.emit('broadcastPeerId', peerId);
             });
         
             socket.on('receivePeerId', (receivedPeerId) => {
                 console.log('Received peer Id: ' + receivedPeerId);
                 remotePeerId = receivedPeerId;
+
+                console.log(`Sending Back PeerId ${peerId} to remotePeerId ${remotePeerId}`);
+                socket.emit('sendBackPeerId', peerId);
             });
 
-            socket.on('newMessage', (message) => {
+            socket.on('recieveSentBackPeerId', (receivedPeerId) => {
+                console.log('Received sentBackPeerId', receivedPeerId);
+                remotePeerId = receivedPeerId;
+            });
+
+            socket.on('newMessage', async (message) => {
                 console.log('New Message Event Triggered');
 
                 const messagesList = document.getElementById('messagesList');
@@ -117,16 +144,65 @@
                 const formattedDate = formatDate(message.sentOn);
 
                 listItem.innerHTML = `
-                    <li>Sent By ${message.name} on ${formattedDate}</li>
+                    <li>Sent by ${message.name} on ${formattedDate}</li>
                     <li>${message.message}</li>
                 `;
                 messagesList.appendChild(listItem);
 
                 const deleteForm = document.createElement('form');
-                deleteForm.action = `/delete-message/${message._id}?_method=DELETE`;
-                deleteForm.method = 'POST';
+                deleteForm.action = `/delete-message?id=${message._id}`;
+                deleteForm.className = 'preventDefault-DELETE'
                 deleteForm.innerHTML = `<button type="submit">Delete</button>`;
+                deleteForm.addEventListener('submit', (event) => {
+                    event.preventDefault();
+                    const delUrl = deleteForm.action;
+                    console.log('delUrl', delUrl);
+
+                    axios.delete(delUrl)
+                        .then(() => {
+                            console.log('Message Deleted from DB');
+                        })
+                        .catch((error) => {
+                            console.error('Server Error Delete Message', error);
+                        });
+                });
                 messagesList.appendChild(deleteForm);
+            });
+
+            socket.on('resetChatMessages', (messages) => {
+                const messagesList = document.getElementById('messagesList');
+                messagesList.innerHTML = '';
+                messages.forEach((message) => {
+                    console.log('message', message);
+                    const formattedDate = formatDate(message.sentOn);
+                    const listItem = document.createElement('div');
+
+                    listItem.innerHTML = `
+                        <li>Sent by ${message.name} on ${formattedDate}</li>
+                        <li>${message.message}</li>
+                    `;
+                    messagesList.appendChild(listItem);
+
+                    const deleteForm = document.createElement('form');
+                    deleteForm.action = `/delete-message?id=${message.id}`;
+                    deleteForm.className = 'preventDefault-DELETE'
+                    deleteForm.innerHTML = `<button type="submit">Delete</button>`;
+                    deleteForm.addEventListener('submit', (event) => {
+                        event.preventDefault();
+                        const delUrl = deleteForm.action;
+                        console.log('delUrl', delUrl);
+
+                        axios.delete(delUrl)
+                            .then(() => {
+                                console.log('Message Deleted from DB');
+                            })
+                            .catch((error) => {
+                                console.error('Server Error Delete Message', error);
+                            });
+                    });
+                    messagesList.appendChild(deleteForm);
+
+                });
 
             });
 

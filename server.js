@@ -1,5 +1,5 @@
 import dotenv from 'dotenv';
-import express from 'express';
+import express, { response } from 'express';
 import bcrypt from 'bcrypt';
 import passport from 'passport';
 import { initialize as initializePassport } from '../chat-app/passport-config.js';
@@ -96,17 +96,46 @@ app.post('/', checkAuthenticated, async (req, res) => {
     }
 });
 
-app.delete('/delete-message/:id', checkAuthenticated, async (req, res) => {
-    const messageId = req.params.id;
+app.delete('/delete-message', checkAuthenticated, async (req, res) => {
+    const messageId = req.query.id;
+    const message = await Messages.findById(messageId);
 
     try {
         await Messages.findByIdAndDelete(messageId);
         console.log('Message deleted from DB');
-        res.redirect('/');
+        res.status(204).send();
     } catch(error) {
-        console.error('Error Deleting Message ', error);
-        res.redirect('/');
+        console.error('Error Deleting Message (/delete-message)', error);
+        res.status(500).send();
     }
+
+    const messages = await Messages.find().exec()
+    .then(messages => messages.map(message => { 
+        return { sentBy: message.sentBy, sentOn: message.sentOn, message: message.message, id: message._id, name: message.name }
+    }));
+
+    io.emit('resetChatMessages', messages);
+});
+
+app.get('/canDelete', async (req, res) => {
+    const user = await req.user;
+    const messageId = req.query.id;
+    console.log(user.email);
+
+    Messages.findById(messageId)
+        .then((message) => {
+            console.log('message.sentBy', message.sentBy);
+            if (user.email == message.sentBy) {
+                console.log('canDelete OK return 204');
+                res.status(204).send();
+            } else {
+                res.status(500).send();
+            }
+        })
+        .catch((error) => {
+            console.log('Server Error Checking if canDelete', error);
+            res.status(500).send();
+        });
 });
 
 app.get('/login', checkNotAuthenticated, (req, res) => {
@@ -169,8 +198,8 @@ io.on('connection', (socket) => {
         socket.broadcast.emit('receivePeerId', peerId);
     });
 
-    socket.on('broadcastBackPeerId', (peerId) => {
-        socket.broadcast.emit('recieveBroadcastedId', peerId);
+    socket.on('sendBackPeerId', (peerId) => {
+        socket.broadcast.emit('recieveSentBackPeerId', peerId);
     })
 })
 
