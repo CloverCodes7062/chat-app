@@ -9,8 +9,13 @@ import methodOverride from 'method-override';
 import mongoose from 'mongoose';
 import http, { createServer } from 'http';
 import { Server } from 'socket.io';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
 
 dotenv.config();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const app = express();
 const server = createServer(app);
@@ -42,6 +47,7 @@ const Messages = mongoose.model('Messages', messageSchema);
 
 app.set('view-engine', 'ejs');
 
+app.use(express.static(__dirname));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(flash());
