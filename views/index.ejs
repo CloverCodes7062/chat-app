@@ -38,11 +38,8 @@
             </form>
         </div>
         <div class="screenshare-container">
-            <video id="localScreen" style="display: none; width: 75vw; height: auto;" autoplay muted></video>
-            <ul class="remote-video-list"></ul>
-            <div id="remoteVideosContainer">
-                <video id="remoteVideo" style="display: none; width: 75vw; height: auto;" autoplay muted></video>
-            </div>
+            <video id="localScreen" style="display: none; width: 60vw; height: auto;" autoplay muted></video>
+            <div id="remoteVideosContainer"></div>
             <button id="startScreenShare">Start Screen Share</button>
             <button id="stopScreenShare" style="display: none;">Stop Screen Share</button>
         </div>
@@ -103,6 +100,7 @@
             let screenStream;
             let peerId;
             let remotePeerId;
+            let remotePeerIds = [];
             const socket = io();
         
             let peer = new Peer();
@@ -117,6 +115,11 @@
             socket.on('receivePeerId', (receivedPeerId) => {
                 console.log('Received peer Id: ' + receivedPeerId);
                 remotePeerId = receivedPeerId;
+                
+                if (!(remotePeerId in remotePeerIds)) {
+                    console.log('Adding PeerId to remotePeerIds: STATE OF remotePeerIds, ', remotePeerIds);
+                    remotePeerIds.push(remotePeerId);
+                }
 
                 console.log(`Sending Back PeerId ${peerId} to remotePeerId ${remotePeerId}`);
                 socket.emit('sendBackPeerId', peerId);
@@ -125,6 +128,11 @@
             socket.on('recieveSentBackPeerId', (receivedPeerId) => {
                 console.log('Received sentBackPeerId', receivedPeerId);
                 remotePeerId = receivedPeerId;
+
+                if (!(remotePeerId in remotePeerIds)) {
+                    console.log('Adding PeerId to remotePeerIds: STATE OF remotePeerIds, ', remotePeerIds);
+                    remotePeerIds.push(remotePeerId);
+                }
             });
 
             socket.on('newMessage', async (message) => {
@@ -206,6 +214,27 @@
                 });
             });
 
+            socket.on('receiveStopRemoteStream', (streamIdToStop) => {
+
+                console.log('receiveStopRemoteStream', streamIdToStop);
+
+                const allRemoteVideos = document.getElementsByClassName('remoteVideo');
+
+                for (remoteVideo of allRemoteVideos) {
+                    let remoteStream = remoteVideo.srcObject;
+
+                    if (remoteStream.id == streamIdToStop) {
+                        console.log('stopping remoteStream', remoteStream);
+
+                        remoteStream.getTracks().forEach(track => track.stop());
+                
+                        remoteStream = null;
+
+                        remoteVideo.style.display = 'none';
+                    }
+                }
+            });
+
             socket.emit('getNewMessages');
 
             peer.on('call', (call) => {
@@ -216,10 +245,15 @@
                 call.on('stream', (stream) => {
                     console.log('stream', stream);
 
-                    const remoteVideo = document.getElementById('remoteVideo');
+                    const remoteVideosContainer = document.getElementById('remoteVideosContainer');
+                    const remoteVideo = document.createElement('video');
+                    remoteVideo.className = 'remoteVideo';
+                    remoteVideo.autoplay = true;
+                    remoteVideo.muted = true;
                     remoteVideo.srcObject = stream;
-                    remoteVideo.style.display = 'block';
-                    console.log('remoteVideo', remoteVideo);
+                    remoteVideo.style.width = '60vw';
+                    remoteVideo.style.height = 'auto';
+                    remoteVideosContainer.appendChild(remoteVideo);
                 });
             })
 
@@ -227,22 +261,31 @@
                 navigator.mediaDevices.getDisplayMedia({ video: true })
                     .then(stream => {
                         screenStream = stream;
-        
-                        document.getElementById('localScreen').srcObject = stream;
-                        document.getElementById('localScreen').style.display = 'block';
-        
-                        document.getElementById('startScreenShare').style.display = 'none';
-                        document.getElementById('stopScreenShare').style.display = 'block';
-        
-                        screenStream.getVideoTracks()[0].onended = () => {
-                            stopScreenShare();
-                        };
-        
-                        if (remotePeerId) {
-                            shareScreen();
+                        
+                        const videoTrack = screenStream.getVideoTracks()[0];
+                        const constraints = {
+                            width: { max: 1920 },
+                            height: { max: 1080 },
                         }
+
+                        videoTrack.applyConstraints(constraints).then(() => {
+                            document.getElementById('localScreen').srcObject = stream;
+                            document.getElementById('localScreen').style.display = 'block';
+            
+                            document.getElementById('startScreenShare').style.display = 'none';
+                            document.getElementById('stopScreenShare').style.display = 'block';
+            
+                            screenStream.getVideoTracks()[0].onended = () => {
+                                stopScreenShare();
+                            };
+            
+                            if (remotePeerIds.length > 0) {
+                                shareScreen();
+                            }
+                        })
+                        .catch(error => console.log('Error Applying Constraints:', error));
                     })
-                    .catch(error => console.log('Error starting the screen share: ', error));
+                    .catch(error => console.log('Error starting the screen share:', error));
             });
         
             document.getElementById('stopScreenShare').addEventListener('click', () => {
@@ -250,26 +293,23 @@
             });
         
             function stopScreenShare() {
+                socket.emit('sendStopRemoteStream', screenStream.id);
                 screenStream.getTracks().forEach(track => track.stop());
-        
+                
                 screenStream = null;
         
                 document.getElementById('startScreenShare').style.display = 'block';
                 document.getElementById('stopScreenShare').style.display = 'none';
                 document.getElementById('localScreen').style.display = 'none';
-        
-                if (peer && peer.destroy) {
-                    peer.destroy();
-        
-                    peer = new Peer();
-                }
             }
         
             function shareScreen() {
                 console.log('shareScreen Called');
 
-                const call = peer.call(remotePeerId, screenStream);
-                console.log('Remote Peer ID, Stream', remotePeerId, screenStream);
+                for (id of remotePeerIds) {
+                    console.log(`(shareScreen) Sending screenStream ${screenStream} to remotePeerId ${id}`);
+                    const call = peer.call(id, screenStream);
+                }
             } 
         </script>
     </main>

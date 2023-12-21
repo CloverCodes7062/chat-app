@@ -207,6 +207,12 @@ io.on('connection', (socket) => {
     
         io.emit('resetChatMessages', messages);
     })
+
+    socket.on('sendStopRemoteStream', (streamId) => {
+        console.log('receieved streamId', streamId);
+        
+        socket.broadcast.emit('receiveStopRemoteStream', streamId);
+    })
 })
 
 server.listen(3000, () => {
