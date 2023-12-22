@@ -9,22 +9,6 @@
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 <body>
-    <%
-    function formatDate(sentOn) {
-        const options = {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: 'numeric',
-            minute: 'numeric',
-            second: 'numeric',
-            hour12: true
-        };
-
-        const formattedDate = new Date(sentOn).toLocaleString(undefined, options);
-        return formattedDate;
-    }
-    %>
     <h1>Hi <%= name %> Welcome To The Chatroom</h1>
     <main class="main-section">
         <div class="messages-container">
