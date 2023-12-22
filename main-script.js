@@ -105,6 +105,7 @@ function mainScript() {
         messagesList.appendChild(listItem);
     
         const deleteForm = document.createElement('form');
+        deleteForm.dataset.messageId = message._id;
         deleteForm.action = `/delete-message?id=${message._id}`;
         deleteForm.className = 'preventDefault-DELETE'
         deleteForm.innerHTML = `<button type="submit">Delete</button>`;
@@ -125,8 +126,13 @@ function mainScript() {
     });
     
     socket.on('resetChatMessages', async (messages) => {
-        const messagesList = document.getElementById('messagesList');
+        const messagesContainer = document.getElementById('messages-container');
+        const formPreventDefaultPOST = document.getElementById('preventDefault-POST');
+
+        const messagesList = document.createElement('ul');
+        messagesList.id = 'messagesList';
         messagesList.innerHTML = '';
+
         messages.forEach((message) => {
             console.log('message', message);
             const formattedDate = formatDate(message.sentOn);
@@ -142,6 +148,7 @@ function mainScript() {
                 .then((response) => {
                     if (response.status == 204) {
                         const deleteForm = document.createElement('form');
+                        deleteForm.dataset.messageId = message.id;
                         deleteForm.action = `/delete-message?id=${message.id}`;
                         deleteForm.className = 'preventDefault-DELETE'
                         deleteForm.innerHTML = `<button type="submit">Delete</button>`;
@@ -167,6 +174,15 @@ function mainScript() {
                     console.error('Error Checking canDelete', error);
                 })
         });
+
+        const oldMessagesList = document.getElementById('messagesList');
+
+        if (oldMessagesList) {
+            console.log('oldMessagesList', oldMessagesList);
+            oldMessagesList.remove();
+        }
+
+        messagesContainer.insertBefore(messagesList, formPreventDefaultPOST);
     });
     
     socket.on('receiveStopRemoteStream', (streamIdToStop) => {
@@ -186,6 +202,23 @@ function mainScript() {
                 remoteStream = null;
     
                 remoteVideo.style.display = 'none';
+            }
+        }
+    });
+    
+    socket.on('deleteMessageFromDOM', (messageId) => {
+        console.log('Received deleteMessageFromDOM', messageId);
+
+        const deleteForms = document.getElementsByClassName('preventDefault-DELETE');
+        console.log('deleteForms', deleteForms);
+
+        for (let deleteForm of deleteForms) {
+            const storedMessageId = deleteForm.dataset.messageId;
+            console.log('storedMessageId', storedMessageId);
+            if (storedMessageId == messageId) {
+                console.log('Found deleteForm with messageId:', storedMessageId);
+
+                deleteForm.parentNode.remove()
             }
         }
     });

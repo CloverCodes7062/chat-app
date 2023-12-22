@@ -100,8 +100,9 @@ app.post('/', checkAuthenticated, async (req, res) => {
 
 app.delete('/delete-message', checkAuthenticated, async (req, res) => {
     const messageId = req.query.id;
-    const message = await Messages.findById(messageId);
 
+    io.emit('deleteMessageFromDOM', messageId);
+    
     try {
         await Messages.findByIdAndDelete(messageId);
         console.log('Message deleted from DB');
@@ -115,8 +116,6 @@ app.delete('/delete-message', checkAuthenticated, async (req, res) => {
     .then(messages => messages.map(message => { 
         return { sentBy: message.sentBy, sentOn: message.sentOn, message: message.message, id: message._id, name: message.name }
     }));
-
-    io.emit('resetChatMessages', messages);
 });
 
 app.get('/canDelete', async (req, res) => {
