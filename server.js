@@ -102,7 +102,7 @@ app.delete('/delete-message', checkAuthenticated, async (req, res) => {
     const messageId = req.query.id;
 
     io.emit('deleteMessageFromDOM', messageId);
-    
+
     try {
         await Messages.findByIdAndDelete(messageId);
         console.log('Message deleted from DB');
@@ -111,11 +111,6 @@ app.delete('/delete-message', checkAuthenticated, async (req, res) => {
         console.error('Error Deleting Message (/delete-message)', error);
         res.status(500).send();
     }
-
-    const messages = await Messages.find().exec()
-    .then(messages => messages.map(message => { 
-        return { sentBy: message.sentBy, sentOn: message.sentOn, message: message.message, id: message._id, name: message.name }
-    }));
 });
 
 app.get('/canDelete', async (req, res) => {
