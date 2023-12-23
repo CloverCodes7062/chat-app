@@ -75,9 +75,14 @@ function mainScript() {
             console.log('Adding PeerId to remotePeerIds: STATE OF remotePeerIds, ', remotePeerIds);
             remotePeerIds.push(remotePeerId);
         }
-    
+        
         console.log(`Sending Back PeerId ${peerId} to remotePeerId ${remotePeerId}`);
         socket.emit('sendBackPeerId', peerId);
+
+        if (screenStream) {
+            console.log(`calling receivedPeerId ${receivedPeerId} with current screenStream`);
+            const call = peer.call(receivedPeerId, screenStream);
+        }
     });
     
     socket.on('recieveSentBackPeerId', (receivedPeerId) => {
@@ -227,7 +232,6 @@ function mainScript() {
     
     peer.on('call', (call) => {
         console.log('Incoming Call');
-        
         call.answer();
     
         call.on('stream', (stream) => {
