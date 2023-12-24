@@ -51,7 +51,7 @@ function mainScript() {
         }
     
     });
-    
+
     let screenStream;
     let peerId;
     let remotePeerId;
@@ -80,8 +80,14 @@ function mainScript() {
         socket.emit('sendBackPeerId', peerId);
 
         if (screenStream) {
+            const userName = userNameOfSender;
+
+            const callOptions = {
+                metadata: { peerId: peerId, userNameOfSender:  userName},
+            };
+
             console.log(`calling receivedPeerId ${receivedPeerId} with current screenStream`);
-            const call = peer.call(receivedPeerId, screenStream);
+            const call = peer.call(receivedPeerId, screenStream, callOptions);
         }
     });
     
@@ -203,9 +209,8 @@ function mainScript() {
                 console.log('stopping remoteStream', remoteStream);
     
                 remoteStream.getTracks().forEach(track => track.stop());
-        
                 remoteStream = null;
-    
+
                 remoteVideo.style.display = 'none';
             }
         }
@@ -227,17 +232,39 @@ function mainScript() {
             }
         }
     });
+
+    socket.on('remotePeerDisconnected', (receivedPeerId) => {
+        if (remotePeerIds.includes(receivedPeerId)) {
+            console.log(`Removing receivedPeerId ${receivedPeerId} from remotePeerIds ${remotePeerIds}`);
+            const index = remotePeerIds.indexOf(receivedPeerId);
+
+            remotePeerIds.splice(index, 1);
+
+            console.log(`Removed receivedPeerId ${receivedPeerId} from remotePeerIds ${remotePeerIds}`);
+        } else {
+            console.log(`receivedPeerId ${receivedPeerId} not in remotePeerIds ${remotePeerIds}`);
+        }
+    });
     
     socket.emit('getNewMessages');
     
     peer.on('call', (call) => {
         console.log('Incoming Call');
+        console.log('Call Metadata', call.metadata);
+        const callerPeerId = call.metadata.peerId;
+        const callerUserName = call.metadata.userNameOfSender;
         call.answer();
-    
+
         call.on('stream', (stream) => {
-            console.log('stream', stream);
+
+            console.log('caller', callerUserName);
+            console.log('callerPeerId', callerPeerId);
     
             const remoteVideosContainer = document.getElementById('remoteVideosContainer');
+            const remoteVideoContainer = document.createElement('div');
+            remoteVideoContainer.className = 'remoteVideoContainer';
+            remoteVideosContainer.appendChild(remoteVideoContainer);
+
             const remoteVideo = document.createElement('video');
             remoteVideo.className = 'remoteVideo';
             remoteVideo.autoplay = true;
@@ -245,9 +272,39 @@ function mainScript() {
             remoteVideo.srcObject = stream;
             remoteVideo.style.width = '60vw';
             remoteVideo.style.height = 'auto';
-            remoteVideosContainer.appendChild(remoteVideo);
+            remoteVideo.style.display = 'none';
+
+            remoteVideoContainer.appendChild(remoteVideo);
+
+            const remoteVideoButton = document.createElement('button');
+            remoteVideoButton.textContent = `${callerUserName} is live! | View Stream`;
+            remoteVideoContainer.appendChild(remoteVideoButton);
+
+            const removeRemoteVideoButton = document.createElement('button');
+            removeRemoteVideoButton.textContent = `Stop Watching ${callerUserName}'s Stream`;
+
+            remoteVideoButton.addEventListener('click', () => {
+                remoteVideo.style.display = 'block';
+                remoteVideoContainer.appendChild(removeRemoteVideoButton);
+                remoteVideoButton.remove();
+            });
+
+            removeRemoteVideoButton.addEventListener('click', () => {
+                remoteVideo.style.display = 'none';
+                remoteVideoContainer.appendChild(remoteVideoButton);
+                removeRemoteVideoButton.remove();
+            });
+
         });
-    })
+    });
+
+    window.addEventListener('beforeunload', (event) => {
+        if (peerId) {
+            socket.emit('peerDisconnected', peerId);
+            peer.destroy();
+            socket.disconnect();
+        }
+    });
     
     document.getElementById('startScreenShare').addEventListener('click', () => {
         navigator.mediaDevices.getDisplayMedia({ video: true })
@@ -297,10 +354,17 @@ function mainScript() {
     
     function shareScreen() {
         console.log('shareScreen Called');
-    
+
         for (id of remotePeerIds) {
+            const userName = userNameOfSender;
+            console.log('userNameOfSender', userName);
+
+            const callOptions = {
+                metadata: { peerId: peerId, userNameOfSender: userName },
+            };
+
             console.log(`(shareScreen) Sending screenStream ${screenStream} to remotePeerId ${id}`);
-            const call = peer.call(id, screenStream);
+            const call = peer.call(id, screenStream, callOptions);
         }
     }
 }

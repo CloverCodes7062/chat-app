@@ -26,7 +26,8 @@
             <button id="startScreenShare">Start Screen Share</button>
             <button id="stopScreenShare" style="display: none;">Stop Screen Share</button>
         </div>
-        <script src="../main-script.js" type="text/javascript"></script>
+        <script>const userNameOfSender = '<%= name %>' || 'NO NAME GIVEN';</script>
+        <script src="../main-script.js" type="text/javascript" defer></script>
     </main>
     <form action="/logout?_method=DELETE" method="POST">
         <button type="submit">Log Out</button>

@@ -213,6 +213,11 @@ io.on('connection', (socket) => {
         
         socket.broadcast.emit('receiveStopRemoteStream', streamId);
     })
+
+    socket.on('peerDisconnected', (peerId) => {
+        console.log('Peer Disconnected', peerId);
+        socket.broadcast.emit('remotePeerDisconnected', peerId);
+    })
 })
 
 server.listen(3000, () => {
