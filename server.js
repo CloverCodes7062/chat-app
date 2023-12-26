@@ -116,7 +116,8 @@ app.delete('/delete-message', checkAuthenticated, async (req, res) => {
 app.get('/canDelete', async (req, res) => {
     const user = await req.user;
     const messageId = req.query.id;
-    console.log(user.email);
+
+    console.log('user.email', user.email);
 
     Messages.findById(messageId)
         .then((message) => {

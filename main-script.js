@@ -102,37 +102,54 @@ function mainScript() {
     });
     
     socket.on('newMessage', async (message) => {
+        console.log('message', message);
         console.log('New Message Event Triggered');
     
         const messagesList = document.getElementById('messagesList');
         const listItem = document.createElement('div');
-    
+        
         const formattedDate = formatDate(message.sentOn);
-    
         listItem.innerHTML = `
-            <li>Sent by ${message.name} on ${formattedDate}</li>
-            <li>${message.message}</li>
+            <li>
+                <p>Sent by ${message.name} on ${formattedDate}</p>
+                <p>${message.message}</p>
+            </li>
         `;
+
         messagesList.appendChild(listItem);
-    
-        const deleteForm = document.createElement('form');
-        deleteForm.dataset.messageId = message._id;
-        deleteForm.action = `/delete-message?id=${message._id}`;
-        deleteForm.className = 'preventDefault-DELETE'
-        deleteForm.innerHTML = `<button type="submit">Delete</button>`;
-        deleteForm.addEventListener('submit', (event) => {
-            event.preventDefault();
-            const delUrl = deleteForm.action;
-            console.log('delUrl', delUrl);
-    
-            axios.delete(delUrl)
-                .then(() => {
-                    console.log('Message Deleted from DB');
-                })
-                .catch((error) => {
-                    console.error('Server Error Delete Message', error);
-                });
-        });
+        listItem.dataset.messageId = message._id;
+
+        axios.get(`/canDelete?id=${message._id}`)
+            .then((response) => {
+                if (response.status == 204) {
+                    listItem.className = 'chat-msg sent-msg';
+                    const deleteForm = document.createElement('form');
+                    deleteForm.action = `/delete-message?id=${message._id}`;
+                    deleteForm.className = 'preventDefault-DELETE'
+                    deleteForm.innerHTML = `<button type="submit" class="delete-msg-btn">Delete</button>`;
+                    deleteForm.addEventListener('submit', (event) => {
+                        event.preventDefault();
+                        const delUrl = deleteForm.action;
+                        console.log('delUrl', delUrl);
+
+                        axios.delete(delUrl)
+                            .then(() => {
+                                console.log('Message Deleted from DB');
+                            })
+                            .catch((error) => {
+                                console.error('Server Error Delete Message', error);
+                            });
+                    });
+                    listItem.appendChild(deleteForm);
+                } else {
+                    console.error('.status not 204', response.status);
+                }
+            })
+            .catch((error) => {
+                listItem.className = 'chat-msg received-msg'
+                console.error('Error Checking canDelete', error);
+            })
+
         listItem.appendChild(deleteForm);
     });
     
@@ -150,19 +167,23 @@ function mainScript() {
             const listItem = document.createElement('div');
     
             listItem.innerHTML = `
-                <li>Sent by ${message.name} on ${formattedDate}</li>
-                <li>${message.message}</li>
+                <li>
+                    <p>Sent by ${message.name} on ${formattedDate}</p>
+                    <p>${message.message}</p>
+                </li>
             `;
+
             messagesList.appendChild(listItem);
+            listItem.dataset.messageId = message.id;
     
             axios.get(`/canDelete?id=${message.id}`)
                 .then((response) => {
                     if (response.status == 204) {
+                        listItem.className = 'chat-msg sent-msg';
                         const deleteForm = document.createElement('form');
-                        deleteForm.dataset.messageId = message.id;
                         deleteForm.action = `/delete-message?id=${message.id}`;
                         deleteForm.className = 'preventDefault-DELETE'
-                        deleteForm.innerHTML = `<button type="submit">Delete</button>`;
+                        deleteForm.innerHTML = `<button type="submit" class="delete-msg-btn">Delete</button>`;
                         deleteForm.addEventListener('submit', (event) => {
                             event.preventDefault();
                             const delUrl = deleteForm.action;
@@ -182,6 +203,7 @@ function mainScript() {
                     }
                 })
                 .catch((error) => {
+                    listItem.className = 'chat-msg received-msg'
                     console.error('Error Checking canDelete', error);
                 })
         });
@@ -219,16 +241,16 @@ function mainScript() {
     socket.on('deleteMessageFromDOM', (messageId) => {
         console.log('Received deleteMessageFromDOM', messageId);
 
-        const deleteForms = document.getElementsByClassName('preventDefault-DELETE');
-        console.log('deleteForms', deleteForms);
+        const deleteCandidates = document.getElementsByClassName('chat-msg');
+        console.log('deleteCandidates', deleteCandidates);
 
-        for (let deleteForm of deleteForms) {
-            const storedMessageId = deleteForm.dataset.messageId;
+        for (let deleteCandidate of deleteCandidates) {
+            const storedMessageId = deleteCandidate.dataset.messageId;
             console.log('storedMessageId', storedMessageId);
             if (storedMessageId == messageId) {
                 console.log('Found deleteForm with messageId:', storedMessageId);
 
-                deleteForm.parentNode.remove()
+                deleteCandidate.remove()
             }
         }
     });

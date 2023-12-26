@@ -1,0 +1,115 @@
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #121212;
+    padding: 30px;
+    box-sizing: border-box;
+}
+
+#messages-container {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+#preventDefault-POST {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+#messagesList {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    list-style: none;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.left-section {
+    width: 22.5%;
+    height: 100%;
+    margin-right: 2.5%;
+    background-color: aqua;
+}
+
+.main-section {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: 10px;
+    background-color: #121212;
+    width: 50%;
+    height: 100%;
+    box-sizing: border-box;
+    overflow-y: auto;
+}
+
+.main-section * {
+    color: #FFFFFF;
+}
+
+.main-section .delete-msg-btn {
+    background-color: rgb(175, 0, 0);
+}
+
+.main-section button {
+    background-color: rgb(10,130,253);
+    border: none;
+    border-radius: 10px;
+}
+
+.main-section .sent-msg {
+    background-color: rgb(10,130,253);
+    align-self: flex-end;
+}
+
+.main-section .received-msg {
+    background-color: rgb(51,51,51);
+    align-self: flex-start;
+}
+
+.main-section .received-msg, .main-section .sent-msg {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border: none;
+    border-radius: 15px;
+    padding: 5px;
+    box-sizing: border-box;
+}
+
+.main-section .received-msg p, .main-section .sent-msg p {
+    text-align: center;
+}
+
+.right-section {
+    width: 22.5%;
+    height: 100%;
+    margin-left: 2.5%;
+    background-color: aqua;
+}
+
+.header {
+    position: absolute;
+    top: 30px;
+    color: #FFFFFF;
+}
+
+button {
+    cursor: pointer;
+    padding: 5px;
+    box-sizing: border-box;
+}
+
+h1 {
+    padding: 0;
+    margin: 0;
+}

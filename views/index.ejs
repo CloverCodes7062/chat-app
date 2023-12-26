@@ -4,17 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat App</title>
+    <link rel="stylesheet" href="../css/index.css">
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 <body>
-    <h1>Hi <%= name %> Welcome To The Chatroom</h1>
+    <header class="header">
+        <h1>Hi <%= name %> Welcome To The Chatroom</h1>
+    </header>
+    <section class="left-section"></section>
     <main class="main-section">
         <div id="messages-container">
             <form id="preventDefault-POST" action="/" method="POST">
                 <div>
-                    <label for="message">Enter a Message</label>
+                    <label for="message"></label>
                     <input type="text" name="message" id="message" placeholder="Enter a message" required>
                     <button type="submit">Submit</button>
                 </div>
@@ -28,9 +32,10 @@
         </div>
         <script>const userNameOfSender = '<%= name %>' || 'NO NAME GIVEN';</script>
         <script src="../main-script.js" type="text/javascript" defer></script>
+        <form action="/logout?_method=DELETE" method="POST">
+            <button type="submit">Log Out</button>
+        </form>
     </main>
-    <form action="/logout?_method=DELETE" method="POST">
-        <button type="submit">Log Out</button>
-    </form>
+    <section class="right-section"></section>
 </body>
 </html>
