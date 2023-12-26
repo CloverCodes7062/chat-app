@@ -13,7 +13,10 @@
     <header class="header">
         <h1>Hi <%= name %> Welcome To The Chatroom</h1>
     </header>
-    <section class="left-section"></section>
+    <section class="left-section">
+        <video id="localScreen" style="display: none; width: 60vw; height: auto;" autoplay muted></video>
+        <div id="remoteVideosContainer"></div>
+    </section>
     <main class="main-section">
         <div id="messages-container">
             <form id="preventDefault-POST" action="/" method="POST">
@@ -25,8 +28,6 @@
             </form>
         </div>
         <div class="screenshare-container">
-            <video id="localScreen" style="display: none; width: 60vw; height: auto;" autoplay muted></video>
-            <div id="remoteVideosContainer"></div>
             <button id="startScreenShare">Start Screen Share</button>
             <button id="stopScreenShare" style="display: none;">Stop Screen Share</button>
         </div>
