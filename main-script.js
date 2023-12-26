@@ -332,6 +332,11 @@ function mainScript() {
         navigator.mediaDevices.getDisplayMedia({ video: true })
             .then(stream => {
                 screenStream = stream;
+
+                const resizeLocalScreenBtn = document.getElementById('resize-localScreen-btn');
+                const localScreenContainer = document.getElementById('localScreenContainer');
+                resizeLocalScreenBtn.style.display = 'block';
+                localScreenContainer.style.pointerEvents = 'auto';
                 
                 const videoTrack = screenStream.getVideoTracks()[0];
                 const constraints = {
@@ -364,6 +369,11 @@ function mainScript() {
     });
     
     function stopScreenShare() {
+        const resizeLocalScreenBtn = document.getElementById('resize-localScreen-btn');
+        const localScreenContainer = document.getElementById('localScreenContainer');
+        resizeLocalScreenBtn.style.display = 'none';
+        localScreenContainer.style.pointerEvents = 'none';
+
         socket.emit('sendStopRemoteStream', screenStream.id);
         screenStream.getTracks().forEach(track => track.stop());
         
