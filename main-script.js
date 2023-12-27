@@ -308,6 +308,62 @@ function mainScript() {
 
             const removeRemoteVideoButton = document.createElement('button');
             removeRemoteVideoButton.textContent = `Stop Watching ${callerUserName}'s Stream`;
+            
+            const resizeRemoteVideoBtn = document.createElement('button');
+            resizeRemoteVideoBtn.textContent = 'Current Size | Small';
+            remoteVideoContainer.appendChild(resizeRemoteVideoBtn);
+
+            const startingWidth = `${281.469 * 2}`;
+            const startingHeight = `${197.31 * 2}`;
+        
+            remoteVideoContainer.style.width = startingWidth + 'px';
+            remoteVideoContainer.style.height = startingHeight + 'px';
+        
+            resizeRemoteVideoBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+
+                console.log('resizeRemoteVideoBtn', resizeRemoteVideoBtn);
+        
+                if (remoteVideo.style.display != 'none') {
+                    console.log('srcObject Found');
+                    const computedStyle = window.getComputedStyle(remoteVideoContainer);
+                    let currentWidth = parseFloat(computedStyle.width);
+                    let currentHeight = parseFloat(computedStyle.height);
+        
+                    const currentBtnText = resizeRemoteVideoBtn.textContent;
+        
+                    if (currentBtnText == 'Current Size | Small') {
+                        currentWidth *= 2;
+                        currentHeight *= 2;
+                    
+                        remoteVideoContainer.style.width = `${currentWidth}px`;
+                        remoteVideoContainer.style.height = `${currentHeight}px`;
+        
+                        resizeRemoteVideoBtn.textContent = 'Current Size | Medium';
+        
+                    } else if (currentBtnText == 'Current Size | Medium') {
+                        currentWidth *= 1.25;
+                        currentHeight *= 1.25;
+                    
+                        remoteVideoContainer.style.width = `${currentWidth}px`;
+                        remoteVideoContainer.style.height = `${currentHeight}px`;
+        
+                        resizeRemoteVideoBtn.textContent = 'Current Size | Large';
+        
+                    } else if (currentBtnText == 'Current Size | Large') {
+        
+                        currentWidth = startingWidth;
+                        currentHeight = startingHeight;
+                        
+                        remoteVideoContainer.style.width = `${currentWidth}px`;
+                        remoteVideoContainer.style.height = `${currentHeight}px`;
+        
+                        resizeRemoteVideoBtn.textContent = 'Current Size | Small';
+                    }
+                } else {
+                    console.log('srcObject Not Found');
+                }
+            });
 
             remoteVideoButton.addEventListener('click', () => {
                 remoteVideo.style.display = 'block';
