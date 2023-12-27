@@ -56,5 +56,24 @@
             welcomeH1.className = 'animate__animated animate__fadeOut'
         }, 4000);
     </script>
+    <script type="text/javascript" defer>
+        const remoteVideosContainer = document.getElementById('remoteVideosContainer');
+
+        const observer = new MutationObserver((mutationsList) => {
+            for (const mutation of mutationsList) {
+                if (mutation.type === 'childList') {
+                    console.log('A child node has been added');
+                    const remoteVideosContainer = document.getElementsByClassName('remoteVideoContainer');
+                    const videoToMakeDraggable = remoteVideosContainer[remoteVideosContainer.length - 1];
+                    const videoToMakeDraggableId = videoToMakeDraggable.id;
+                    
+                    runDragVideosScript(videoToMakeDraggableId);
+                }
+            }
+        });
+        const config = { childList: true };
+
+        observer.observe(remoteVideosContainer, config);
+    </script>
 </body>
 </html>

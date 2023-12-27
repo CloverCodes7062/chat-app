@@ -285,15 +285,19 @@ function mainScript() {
             const remoteVideosContainer = document.getElementById('remoteVideosContainer');
             const remoteVideoContainer = document.createElement('div');
             remoteVideoContainer.className = 'remoteVideoContainer';
+            remoteVideoContainer.style.width = `${281.469 * 2}px`;
+            remoteVideoContainer.style.height = `${197.31 * 2}px`;
+            remoteVideoContainer.style.position = 'absolute'
             remoteVideosContainer.appendChild(remoteVideoContainer);
+            remoteVideoContainer.id = `remoteVideo-${remoteVideosContainer.childElementCount}`;
 
             const remoteVideo = document.createElement('video');
             remoteVideo.className = 'remoteVideo';
             remoteVideo.autoplay = true;
             remoteVideo.muted = true;
             remoteVideo.srcObject = stream;
-            remoteVideo.style.width = '60vw';
-            remoteVideo.style.height = 'auto';
+            remoteVideo.style.width = '100%';
+            remoteVideo.style.height = '100%';
             remoteVideo.style.display = 'none';
 
             remoteVideoContainer.appendChild(remoteVideo);
