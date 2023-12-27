@@ -1,8 +1,8 @@
-function runDragVideosScript() {
+function runDragVideosScript(container) {
     let isDragging = false;
     let offsetX, offsetY;
 
-    const screenShareContainer = document.getElementById('localScreenContainer');
+    const screenShareContainer = document.getElementById(container);
 
     screenShareContainer.addEventListener('mousedown', (e) => {
         isDragging = true;
@@ -27,4 +27,4 @@ function runDragVideosScript() {
     });
 }
 
-runDragVideosScript();
+runDragVideosScript(container);

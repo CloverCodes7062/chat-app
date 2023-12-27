@@ -5,13 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat App</title>
     <link rel="stylesheet" href="../css/index.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 <body>
     <header class="header">
-        <h1>Hi <%= name %> Welcome To The Chatroom</h1>
+        <h1 id="welcomeH1">Hi <%= name %> Welcome To The Chatroom</h1>
     </header>
     <section class="left-section">
         <div id="localScreenContainer" style="pointer-events: none;">
@@ -43,82 +44,17 @@
     <section class="right-section"></section>
     <script src="../dragVideosScript.js" type="text/javascript" defer></script>
     <script type="text/javascript" defer>
-        function runSetLocalScreenWidthHeightScript() {
-            const leftSections = document.getElementsByClassName('left-section');
-            const leftSection = leftSections[0];
-            const rect = leftSection.getBoundingClientRect();
-
-            const containerWidth = rect.width;
-            const containerHeight = rect.height;
-
-            const localScreenContainer = document.getElementById('localScreenContainer');
-            localScreenContainer.style.width = `${containerWidth}px`;
-            localScreenContainer.style.height = `auto`;
-        }
-
-        runSetLocalScreenWidthHeightScript();
+        document.addEventListener('DOMContentLoaded', () => {
+            runDragVideosScript('localScreenContainer');
+        })
     </script>
+    <script type="text/javascript" src="../runSetLocalScreenWidthHeightScript.js" defer></script>
+    <script type="text/javascript" src="../runResizeLocalScreenScript.js" defer></script>
     <script type="text/javascript" defer>
-        function runResizeLocalScreenScript() {
-            const resizeLocalScreenBtn = document.getElementById('resize-localScreen-btn');
-            const localScreenContainer = document.getElementById('localScreenContainer');
-            const localScreen = document.getElementById('localScreen');
-
-            const startingWidth = `${281.469 * 2}`;
-            const startingHeight = `${197.31 * 2}`;
-
-            localScreenContainer.style.width = startingWidth + 'px';
-            localScreenContainer.style.height = startingHeight + 'px';
-
-            resizeLocalScreenBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-
-                if (localScreen.style.display != 'none') {
-                    console.log('srcObject Found');
-                    const computedStyle = window.getComputedStyle(localScreenContainer);
-                    let currentWidth = parseFloat(computedStyle.width);
-                    let currentHeight = parseFloat(computedStyle.height);
-
-                    const currentBtnText = resizeLocalScreenBtn.textContent;
-                    console.log('currentBtnText', currentBtnText);
-
-                    if (currentBtnText == 'Current Size | Small') {
-                        currentWidth *= 2;
-                        currentHeight *= 2;
-                    
-                        localScreenContainer.style.width = `${currentWidth}px`;
-                        localScreenContainer.style.height = `${currentHeight}px`;
-
-                        resizeLocalScreenBtn.textContent = 'Current Size | Medium';
-
-                    } else if (currentBtnText == 'Current Size | Medium') {
-                        currentWidth *= 1.25;
-                        currentHeight *= 1.25;
-                    
-                        localScreenContainer.style.width = `${currentWidth}px`;
-                        localScreenContainer.style.height = `${currentHeight}px`;
-
-                        resizeLocalScreenBtn.textContent = 'Current Size | Large';
-
-                    } else if (currentBtnText == 'Current Size | Large') {
-
-                        currentWidth = startingWidth;
-                        currentHeight = startingHeight;
-                        
-                        console.log(currentWidth, currentHeight);
-                        localScreenContainer.style.width = `${currentWidth}px`;
-                        localScreenContainer.style.height = `${currentHeight}px`;
-
-                        resizeLocalScreenBtn.textContent = 'Current Size | Small';
-                    }
-                } else {
-                    console.log('srcObject Not Found');
-                }
-
-            });
-        }
-
-        runResizeLocalScreenScript();
+        const welcomeH1 = document.getElementById('welcomeH1');
+        setTimeout(() => {
+            welcomeH1.className = 'animate__animated animate__fadeOut'
+        }, 4000);
     </script>
 </body>
 </html>

@@ -42,7 +42,6 @@ body {
     width: 22.5%;
     height: 100%;
     margin-right: 2.5%;
-    background-color: aqua;
     overflow-x: auto;
 }
 
@@ -102,7 +101,6 @@ body {
     width: 22.5%;
     height: 100%;
     margin-left: 2.5%;
-    background-color: aqua;
 }
 
 .header {
