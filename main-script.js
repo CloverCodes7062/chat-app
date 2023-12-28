@@ -234,6 +234,11 @@ function mainScript() {
                 remoteStream = null;
 
                 remoteVideo.style.display = 'none';
+
+                const parentNode = remoteVideo.parentNode;
+
+                console.log('parentNode', parentNode);
+                parentNode.remove();
             }
         }
     });
@@ -284,6 +289,9 @@ function mainScript() {
     
             const remoteVideosContainer = document.getElementById('remoteVideosContainer');
             const remoteVideoContainer = document.createElement('div');
+
+            remoteVideoContainer.dataset.placeholderWidth = `${281.469 * 2}px`;
+            remoteVideoContainer.dataset.placeholderHeight = `${197.31 * 2}px`;
             remoteVideoContainer.className = 'remoteVideoContainer';
             remoteVideoContainer.style.width = `${281.469 * 2}px`;
             remoteVideoContainer.style.height = `${197.31 * 2}px`;
@@ -311,6 +319,7 @@ function mainScript() {
             
             const resizeRemoteVideoBtn = document.createElement('button');
             resizeRemoteVideoBtn.textContent = 'Current Size | Small';
+            resizeRemoteVideoBtn.id = `remoteVideo-${remoteVideosContainer.childElementCount}-resizeBtn`;
             remoteVideoContainer.appendChild(resizeRemoteVideoBtn);
 
             const startingWidth = `${281.469 * 2}`;
@@ -321,8 +330,6 @@ function mainScript() {
         
             resizeRemoteVideoBtn.addEventListener('click', (e) => {
                 e.preventDefault();
-
-                console.log('resizeRemoteVideoBtn', resizeRemoteVideoBtn);
         
                 if (remoteVideo.style.display != 'none') {
                     console.log('srcObject Found');
@@ -366,14 +373,31 @@ function mainScript() {
             });
 
             remoteVideoButton.addEventListener('click', () => {
+                remoteVideoContainer.style.width = remoteVideoContainer.dataset.placeholderWidth;
+                remoteVideoContainer.style.height = remoteVideoContainer.dataset.placeholderHeight;
+
                 remoteVideo.style.display = 'block';
+                remoteVideo.style.pointerEvents = 'auto';
+
                 remoteVideoContainer.appendChild(removeRemoteVideoButton);
                 remoteVideoButton.remove();
             });
 
             removeRemoteVideoButton.addEventListener('click', () => {
+                const computedStyle = window.getComputedStyle(remoteVideo);
+                let currentWidth = parseFloat(computedStyle.width);
+                let currentHeight = parseFloat(computedStyle.height);
+
                 remoteVideo.style.display = 'none';
+                remoteVideo.style.pointerEvents = 'none';
+                remoteVideoContainer.dataset.placeholderWidth = `${currentWidth}px`;
+                remoteVideoContainer.dataset.placeholderHeight = `${currentHeight}px`;
+
                 remoteVideoContainer.appendChild(remoteVideoButton);
+
+                remoteVideoContainer.style.width = 'min-content';
+                remoteVideoContainer.style.height = 'min-content';
+
                 removeRemoteVideoButton.remove();
             });
 
