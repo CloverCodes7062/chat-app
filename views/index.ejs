@@ -36,66 +36,17 @@
             <button id="stopScreenShare" style="display: none;">Stop Screen Share</button>
         </div>
         <script>const userNameOfSender = '<%= name %>' || 'NO NAME GIVEN';</script>
-        <script src="../main-script.js" type="text/javascript" defer></script>
         <form action="/logout?_method=DELETE" method="POST">
             <button type="submit">Log Out</button>
         </form>
     </main>
     <section class="right-section"></section>
-    <script src="../dragVideosScript.js" type="text/javascript" defer></script>
-    <script type="text/javascript" defer>
-        document.addEventListener('DOMContentLoaded', () => {
-            runDragVideosScript('localScreenContainer');
-        })
-    </script>
+    <script type="text/javascript" src="../main-script.js" defer></script>
+    <script type="text/javascript" src="../dragVideosScript.js" defer></script>
+    <script type="text/javascript" src="../makeLocalScreenDraggableScript.js" defer></script>
     <script type="text/javascript" src="../runSetLocalScreenWidthHeightScript.js" defer></script>
     <script type="text/javascript" src="../runResizeLocalScreenScript.js" defer></script>
-    <script type="text/javascript" defer>
-        const welcomeH1 = document.getElementById('welcomeH1');
-        setTimeout(() => {
-            welcomeH1.className = 'animate__animated animate__fadeOut'
-        }, 4000);
-    </script>
-    <script type="text/javascript" defer>
-        const remoteVideosContainer = document.getElementById('remoteVideosContainer');
-
-        const observer = new MutationObserver((mutationsList) => {
-            for (const mutation of mutationsList) {
-                if (mutation.type === 'childList') {
-                    console.log('A child node has been added/removed');
-                    const remoteVideosContainer = document.getElementsByClassName('remoteVideoContainer');
-
-                    if (mutation.addedNodes.length > 0) {
-                        mutation.addedNodes.forEach((node) => {
-                            const videoToMakeDraggable = remoteVideosContainer[remoteVideosContainer.length - 1];
-                            const videoToMakeDraggableId = videoToMakeDraggable.id;
-                        
-                            runDragVideosScript(videoToMakeDraggableId);
-                        });    
-                    }
-
-                    if (mutation.removedNodes.length > 0) {
-                        const removedNodeId = parseInt(mutation.removedNodes[0].id.match(/\d+/)[0]);
-
-                        for (const remoteVideoContainer of remoteVideosContainer) {
-                            let idNumber = parseInt(remoteVideoContainer.id.match(/\d+/)[0]);
-
-                            if (idNumber >= removedNodeId) {
-                                const remoteVideoContainerBtn = document.getElementById(`remoteVideo-${idNumber}-btn`);
-
-                                idNumber -= mutation.removedNodes.length;
-
-                                remoteVideoContainer.id = `remoteVideo-${idNumber}`;
-                                remoteVideoContainerBtn.id = `remoteVideo-${idNumber}-resizeBtn`;
-                            }
-                        }
-                    }
-                }
-            }
-        });
-        const config = { childList: true };
-
-        observer.observe(remoteVideosContainer, config);
-    </script>
+    <script type="text/javascript" src="../removeWelcomeH1Script.js" defer></script>
+    <script type="text/javascript" src="../observeRemoteVideosContainer.js" defer></script>
 </body>
 </html>
