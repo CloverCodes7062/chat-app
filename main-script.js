@@ -293,9 +293,9 @@ function mainScript() {
             remoteVideoContainer.dataset.placeholderWidth = `${281.469 * 2}px`;
             remoteVideoContainer.dataset.placeholderHeight = `${197.31 * 2}px`;
             remoteVideoContainer.className = 'remoteVideoContainer';
-            remoteVideoContainer.style.width = `${281.469 * 2}px`;
-            remoteVideoContainer.style.height = `${197.31 * 2}px`;
-            remoteVideoContainer.style.position = 'absolute'
+            remoteVideoContainer.style.width = `min-content`;
+            remoteVideoContainer.style.height = `min-content`;
+            remoteVideoContainer.style.position = 'absolute';
             remoteVideosContainer.appendChild(remoteVideoContainer);
             remoteVideoContainer.id = `remoteVideo-${remoteVideosContainer.childElementCount}`;
 
@@ -320,13 +320,12 @@ function mainScript() {
             const resizeRemoteVideoBtn = document.createElement('button');
             resizeRemoteVideoBtn.textContent = 'Current Size | Small';
             resizeRemoteVideoBtn.id = `remoteVideo-${remoteVideosContainer.childElementCount}-resizeBtn`;
+            resizeRemoteVideoBtn.style.display = 'none';
+            resizeRemoteVideoBtn.style.pointerEvents = 'none';
             remoteVideoContainer.appendChild(resizeRemoteVideoBtn);
-
-            const startingWidth = `${281.469 * 2}`;
-            const startingHeight = `${197.31 * 2}`;
         
-            remoteVideoContainer.style.width = startingWidth + 'px';
-            remoteVideoContainer.style.height = startingHeight + 'px';
+            remoteVideoContainer.style.width = 'min-content';
+            remoteVideoContainer.style.height = 'min-content';
         
             resizeRemoteVideoBtn.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -378,6 +377,8 @@ function mainScript() {
 
                 remoteVideo.style.display = 'block';
                 remoteVideo.style.pointerEvents = 'auto';
+                resizeRemoteVideoBtn.style.display = 'block';
+                resizeRemoteVideoBtn.style.pointerEvents = 'auto';
 
                 remoteVideoContainer.appendChild(removeRemoteVideoButton);
                 remoteVideoButton.remove();
@@ -397,6 +398,10 @@ function mainScript() {
 
                 remoteVideoContainer.style.width = 'min-content';
                 remoteVideoContainer.style.height = 'min-content';
+                remoteVideoContainer.style.top = '30px';
+                remoteVideoContainer.style.left = '30px';
+                resizeRemoteVideoBtn.style.display = 'none';
+                resizeRemoteVideoBtn.style.pointerEvents = 'auto';
 
                 removeRemoteVideoButton.remove();
             });
