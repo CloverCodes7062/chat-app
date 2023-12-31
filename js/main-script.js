@@ -102,10 +102,11 @@ function mainScript() {
     });
     
     socket.on('newMessage', async (message) => {
-        console.log('message', message);
         console.log('New Message Event Triggered');
     
-        const messagesList = document.getElementById('messagesList');
+        const sentMsgList = document.getElementById('sentMsgList');
+        const receivedMsgList = document.getElementById('receivedMsgList');
+
         const listItem = document.createElement('div');
         
         const formattedDate = formatDate(message.sentOn);
@@ -116,12 +117,12 @@ function mainScript() {
             </li>
         `;
 
-        messagesList.appendChild(listItem);
         listItem.dataset.messageId = message._id;
 
         axios.get(`/canDelete?id=${message._id}`)
             .then((response) => {
                 if (response.status == 204) {
+                    sentMsgList.appendChild(listItem);
                     listItem.className = 'chat-msg sent-msg';
                     const deleteForm = document.createElement('form');
                     deleteForm.action = `/delete-message?id=${message._id}`;
@@ -146,7 +147,8 @@ function mainScript() {
                 }
             })
             .catch((error) => {
-                listItem.className = 'chat-msg received-msg'
+                receivedMsgList.appendChild(listItem);
+                listItem.className = 'chat-msg received-msg';
                 console.error('Error Checking canDelete', error);
             })
 
@@ -154,15 +156,28 @@ function mainScript() {
     });
     
     socket.on('resetChatMessages', async (messages) => {
+        console.log('resetChatMessages called');
+
         const messagesContainer = document.getElementById('messages-container');
         const formPreventDefaultPOST = document.getElementById('preventDefault-POST');
+
+        const sentMsgList = document.createElement('ul');
+        const receivedMsgList = document.createElement('ul');
+
+        console.log('sentMsgList', sentMsgList);
+        console.log('receivedMsgList', receivedMsgList);
+
+        sentMsgList.id = 'sentMsgList';
+        receivedMsgList.id = 'receivedMsgList';
+
+        sentMsgList.innerHTML = '';
+        receivedMsgList.innerHTML = '';
 
         const messagesList = document.createElement('ul');
         messagesList.id = 'messagesList';
         messagesList.innerHTML = '';
 
         messages.forEach((message) => {
-            console.log('message', message);
             const formattedDate = formatDate(message.sentOn);
             const listItem = document.createElement('div');
     
@@ -203,7 +218,7 @@ function mainScript() {
                     }
                 })
                 .catch((error) => {
-                    listItem.className = 'chat-msg received-msg'
+                    listItem.className = 'chat-msg received-msg';
                     console.error('Error Checking canDelete', error);
                 })
         });
@@ -216,6 +231,29 @@ function mainScript() {
         }
 
         messagesContainer.insertBefore(messagesList, formPreventDefaultPOST);
+
+        console.log('messagesList', messagesList);
+
+        setTimeout(() => {
+            const sentMsgCollection = document.getElementsByClassName('sent-msg');
+            const receivedMsgCollection = document.getElementsByClassName('received-msg');
+
+            for (const sentMsg of Array.from(sentMsgCollection)) {
+                console.log('sentMsg', sentMsg);
+                sentMsgList.appendChild(sentMsg);
+            }
+
+            for (const receivedMsg of Array.from(receivedMsgCollection)) {
+                console.log('receivedMsg', receivedMsg);
+                receivedMsgList.appendChild(receivedMsg);
+            }
+
+            messagesList.remove();
+            messagesContainer.insertBefore(receivedMsgList, formPreventDefaultPOST);
+            messagesContainer.insertBefore(sentMsgList, formPreventDefaultPOST);
+
+        }, 500);
+
     });
     
     socket.on('receiveStopRemoteStream', (streamIdToStop) => {

@@ -17,6 +17,7 @@ body {
 
 #messages-container {
     width: 100%;
+    display: flex;
     box-sizing: border-box;
 }
 
