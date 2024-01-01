@@ -131,3 +131,10 @@ h1 {
 li {
     list-style: none;
 }
+
+.misc-btns {
+    background-color: rgb(10,130,253);
+    color: #fdfdfd;
+    border: none;
+    border-radius: 10px;
+}

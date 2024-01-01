@@ -27,7 +27,7 @@
                 <div>
                     <label for="message"></label>
                     <input type="text" name="message" id="message" placeholder="Enter a message" required>
-                    <button type="submit">Submit</button>
+                    <button type="submit" id="submit-btn">Submit</button>
                 </div>
             </form>
         </div>
@@ -37,7 +37,7 @@
         </div>
         <script>const userNameOfSender = '<%= name %>' || 'NO NAME GIVEN';</script>
         <form action="/logout?_method=DELETE" method="POST">
-            <button type="submit">Log Out</button>
+            <button type="submit" id="logout-btn">Log Out</button>
         </form>
     </main>
     <section class="right-section"></section>

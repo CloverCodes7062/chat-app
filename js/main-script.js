@@ -349,10 +349,12 @@ function mainScript() {
             remoteVideoContainer.appendChild(remoteVideo);
 
             const remoteVideoButton = document.createElement('button');
+            remoteVideoButton.className = 'misc-btns';
             remoteVideoButton.textContent = `${callerUserName} is live! | View Stream`;
             remoteVideoContainer.appendChild(remoteVideoButton);
 
             const removeRemoteVideoButton = document.createElement('button');
+            removeRemoteVideoButton.className = 'misc-btns';
             removeRemoteVideoButton.textContent = `Stop Watching ${callerUserName}'s Stream`;
             
             const resizeRemoteVideoBtn = document.createElement('button');

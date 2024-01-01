@@ -3,6 +3,8 @@ function runResizeLocalScreenScript() {
     const localScreenContainer = document.getElementById('localScreenContainer');
     const localScreen = document.getElementById('localScreen');
 
+    resizeLocalScreenBtn.className = 'misc-btns';
+
     const startingWidth = `${281.469 * 2}`;
     const startingHeight = `${197.31 * 2}`;
 

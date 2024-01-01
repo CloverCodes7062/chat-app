@@ -11,6 +11,14 @@ function runObserveRemoteVideosContainer() {
                     mutation.addedNodes.forEach((node) => {
                         const videoToMakeDraggable = remoteVideosContainer[remoteVideosContainer.length - 1];
                         const videoToMakeDraggableId = videoToMakeDraggable.id;
+
+                        const videoToMakeDraggableChildNodes = Array.from(videoToMakeDraggable.childNodes);
+
+                        for (const childNode of videoToMakeDraggableChildNodes) {
+                            if (childNode.nodeName === 'BUTTON' && !(childNode.className.includes('misc-btns'))) {
+                                childNode.className += 'misc-btns';
+                            }
+                        }
                     
                         runDragVideosScript(videoToMakeDraggableId);
                     });    
