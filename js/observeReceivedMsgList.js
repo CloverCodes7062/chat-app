@@ -6,7 +6,7 @@ function runObserveReceivedMsgList() {
 
         if (receievedMsgList) {
             console.log('observer found mutation in messages-container, correcting receivedMsgList margin-top', receievedMsgList);
-            receievedMsgList.style.marginTop = `${90 * receievedMsgList.childElementCount}px`;
+            receievedMsgList.style.marginTop = `${90 * (receievedMsgList.childElementCount / 2)}px`;
         }
     });
 
