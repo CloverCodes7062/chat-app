@@ -501,9 +501,41 @@ function mainScript() {
         
         navigator.mediaDevices.getUserMedia({ audio: true })
             .then((stream) => {
+                const localAudioVisualizer = document.getElementById('localAudioVisualizer');
+
                 audioStream = stream;
                 const localAudio = document.getElementById('localAudio');
                 localAudio.srcObject = audioStream;
+
+                const audioContext = new (window.AudioContext)();
+                const sourceNode = audioContext.createMediaStreamSource(localAudio.srcObject);
+                
+                const analyser = audioContext.createAnalyser();
+                sourceNode.connect(analyser);
+
+                analyser.fftSize = 2048;
+                const bufferLength = analyser.frequencyBinCount;
+                const dataArray = new Uint8Array(bufferLength);
+
+                function isLocalAudioPlaying() {
+                    analyser.getByteFrequencyData(dataArray);
+                    const average = dataArray.reduce((sum, value) => sum + value, 0) / bufferLength;
+
+                    const threshold = 10;
+
+                    return average > threshold;
+                }
+
+                setInterval(() => {
+                    if (isLocalAudioPlaying()) {
+                        console.log('Audio is actively playing');
+                        localAudioVisualizer.style.border = '5px solid green';
+                    } else {
+                        console.log('Audio is NOT actively playing');
+                        localAudioVisualizer.style.border = 'none';
+                    }
+                }, 100);
+
             })
             .catch((error) => {
                 console.error('Error Accessing User Audio: ', error);
