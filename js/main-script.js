@@ -438,8 +438,14 @@ function mainScript() {
 
                 remoteVideoContainer.style.width = 'min-content';
                 remoteVideoContainer.style.height = 'min-content';
-                remoteVideoContainer.style.top = '30px';
-                remoteVideoContainer.style.left = '30px';
+
+                const remoteVideoContainerComputedStyle = window.getComputedStyle(remoteVideoContainer);
+                const remoteVideoContainerCurrentWidth = parseFloat(remoteVideoContainerComputedStyle.width);
+                const remoteVideoContainerCurrentHeight = parseFloat(remoteVideoContainerComputedStyle.height);
+
+                remoteVideoContainer.style.top = `${remoteVideoContainer.children * 30 + remoteVideoContainerCurrentHeight}px`;
+                remoteVideoContainer.style.left = `30px`;
+
                 resizeRemoteVideoBtn.style.display = 'none';
                 resizeRemoteVideoBtn.style.pointerEvents = 'auto';
 
@@ -491,6 +497,8 @@ function mainScript() {
                 .catch(error => console.log('Error Applying Constraints:', error));
             })
             .catch(error => console.log('Error starting the screen share:', error));
+        
+        navigator.mediaDevices.getUserMedia();
     });
     
     document.getElementById('stopScreenShare').addEventListener('click', () => {

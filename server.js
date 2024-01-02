@@ -11,14 +11,20 @@ import http, { createServer } from 'http';
 import { Server } from 'socket.io';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import https from 'https';
+import fs from 'fs';
 
 dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+const privateKey = fs.readFileSync('localhost-key.pem', 'utf8');
+const certificate = fs.readFileSync('localhost.pem', 'utf8');
+const credentials = { key: privateKey, cert: certificate };
+
 const app = express();
-const server = createServer(app);
+const server = https.createServer(credentials, app);
 const io = new Server(server);
 
 initializePassport(
