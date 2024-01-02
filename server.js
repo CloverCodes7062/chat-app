@@ -29,6 +29,10 @@ const app = express();
 const server = https.createServer(credentials, app);
 const io = new Server(server);
 
+const agent = new https.Agent({
+    rejectUnauthorized: false,
+});
+
 initializePassport(
     passport, 
     async (email) => await User.findOne({ email: email }),
@@ -40,7 +44,8 @@ mongoose.connect(process.env.MONGODB_URI);
 const userSchema = new mongoose.Schema({
     name: String,
     email: String,
-    password: String
+    password: String,
+    profilePicture: { data: Buffer, contentType: String },
 });
 
 const messageSchema = new mongoose.Schema({
@@ -68,24 +73,10 @@ app.use(passport.initialize());
 app.use(passport.session());
 app.use(methodOverride('_method'));
 
-const agent = new https.Agent({
-    rejectUnauthorized: false,
-});
-
 app.get('/', checkAuthenticated, async (req, res) => {
     const user = await req.user;
-
-    axios.get(`https://localhost:3000/generateDefaultImg?initial=${user.name.charAt(0)}`, {
-        httpsAgent: agent,
-        })
-        .then((response) => {
-            console.log('/generateDefaultImg response', response);
-        })
-        .catch((error) => {
-            console.error('error GET /generateDefaultImg', error);
-        });
-
-    res.render('index.ejs', { name: user.name });
+    
+    res.render('index.ejs', { name: user.name, profilePicture: user.profilePicture });
 });
 
 app.post('/', checkAuthenticated, async (req, res) => {
@@ -173,17 +164,28 @@ app.get('/register', checkNotAuthenticated, (req, res) => {
 
 app.post('/register', checkNotAuthenticated, async (req, res) => {
     try {
-        const hashedPassword = await bcrypt.hash(req.body.password, 10);
-        const user = new User({
-            name: req.body.name,
-            email: req.body.email,
-            password: hashedPassword
+        const imageResponse = await axios.get(`https://localhost:3000/generateDefaultImg?initial=${req.body.name.charAt(0)}`, {
+            httpsAgent: agent,
+            responseType: 'arraybuffer',
         });
-        await user.save();
-        res.redirect('/login');
+
+        try {
+            const hashedPassword = await bcrypt.hash(req.body.password, 10);
+            const user = new User({
+                name: req.body.name,
+                email: req.body.email,
+                password: hashedPassword,
+                profilePicture: { data: imageResponse.data, contentType: 'image/jpeg'}
+            });
+            await user.save();
+            res.redirect('/login');
+        } catch (error) {
+            console.error('Error creating user ', error);
+            res.redirect('/register');
+        }
+
     } catch (error) {
-        console.error('Error creating user ', error);
-        res.redirect('/register');
+        console.error('Error generating defaultImg', error);
     }
 });
 
@@ -220,16 +222,8 @@ app.get('/generateDefaultImg', (req, res) => {
 
     const buffer = canvas.toBuffer('image/jpeg');
 
-    async function saveImage() {
-        try {
-            await fs.writeFileSync('output.png', buffer);
-            console.log('Image Saved Successfully');
-        } catch (error) {
-            console.error('Error Saving the image', error);
-        }
-    }
-
-    saveImage();
+    res.contentType('image/jpeg');
+    res.end(buffer);
 });
 
 function checkAuthenticated(req, res, next) {

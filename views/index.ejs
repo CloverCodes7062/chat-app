@@ -42,7 +42,13 @@
     </main>
     <section class="right-section">
         <div id="localAudioContainer">
-            <img id="localAudioVisualizer" src="../images/test.jpeg" width="125" height="125" style="border-radius: 50%;">
+            <img 
+                id="localAudioVisualizer" 
+                src="data:<%= profilePicture.contentType %>;base64,<%= profilePicture.data.toString('base64') %>" 
+                width="125" 
+                height="125" 
+                style="border-radius: 50%;"
+            >
             <audio id="localAudio" autoplay="true"></audio>
         </div>
     </section>
