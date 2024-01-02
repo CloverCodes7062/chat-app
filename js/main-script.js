@@ -52,6 +52,7 @@ function mainScript() {
     
     });
 
+    let audioStream;
     let screenStream;
     let peerId;
     let remotePeerId;
@@ -498,7 +499,15 @@ function mainScript() {
             })
             .catch(error => console.log('Error starting the screen share:', error));
         
-        navigator.mediaDevices.getUserMedia();
+        navigator.mediaDevices.getUserMedia({ audio: true })
+            .then((stream) => {
+                audioStream = stream;
+                const localAudio = document.getElementById('localAudio');
+                localAudio.srcObject = audioStream;
+            })
+            .catch((error) => {
+                console.error('Error Accessing User Audio: ', error);
+            });
     });
     
     document.getElementById('stopScreenShare').addEventListener('click', () => {
