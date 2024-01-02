@@ -13,6 +13,8 @@ import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import https from 'https';
 import fs from 'fs';
+import { createCanvas, loadImage } from 'canvas';
+import axios from 'axios';
 
 dotenv.config();
 
@@ -66,8 +68,22 @@ app.use(passport.initialize());
 app.use(passport.session());
 app.use(methodOverride('_method'));
 
+const agent = new https.Agent({
+    rejectUnauthorized: false,
+});
+
 app.get('/', checkAuthenticated, async (req, res) => {
     const user = await req.user;
+
+    axios.get(`https://localhost:3000/generateDefaultImg?initial=${user.name.charAt(0)}`, {
+        httpsAgent: agent,
+        })
+        .then((response) => {
+            console.log('/generateDefaultImg response', response);
+        })
+        .catch((error) => {
+            console.error('error GET /generateDefaultImg', error);
+        });
 
     res.render('index.ejs', { name: user.name });
 });
@@ -176,6 +192,44 @@ app.delete('/logout', (req, res) => {
         if (err) { return next(err); }
         res.redirect('/login');
     });
+});
+
+app.get('/generateDefaultImg', (req, res) => {
+    console.log('/generateDefaultImg CALLED');
+
+    const initial = req.query.initial;
+
+    const width = 125;
+    const height = 125;
+
+    const canvas = createCanvas(width, height);
+    const ctx = canvas.getContext('2d');
+
+    ctx.fillStyle = 'red';
+    ctx.fillRect(0, 0, width, height);
+
+    ctx.font = '62px Arial';
+    ctx.fillStyle = 'white';
+
+    const text = initial.toUpperCase();
+    const textWidth = ctx.measureText(text).width;
+    const x = (width - textWidth) / 2;
+    const y = height / 2 + 20;
+
+    ctx.fillText(text, x, y);
+
+    const buffer = canvas.toBuffer('image/jpeg');
+
+    async function saveImage() {
+        try {
+            await fs.writeFileSync('output.png', buffer);
+            console.log('Image Saved Successfully');
+        } catch (error) {
+            console.error('Error Saving the image', error);
+        }
+    }
+
+    saveImage();
 });
 
 function checkAuthenticated(req, res, next) {
