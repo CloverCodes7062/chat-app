@@ -511,8 +511,7 @@ function mainScript() {
                 volumeSlider.step = '0.05';
 
                 volumeSlider.addEventListener('input', () => {
-                    const volumeSliderCurrentValue = volumeSlider.value;
-                    console.log('volumeSliderCurrentValue', volumeSliderCurrentValue);
+                    remoteAudio.volume = volumeSlider.value;
                 });
 
                 volumeSliderContainer.appendChild(volumeSlider);
