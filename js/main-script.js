@@ -271,6 +271,29 @@ function mainScript() {
         }, 500);
 
     });
+
+    socket.on('receiveStopRemoteAudio', (audioIdToStop) => {
+        console.log('receiveStopRemoteAudio', audioIdToStop);
+
+        const allRemoteAudio = document.getElementsByClassName('remoteAudio');
+
+        for (let remoteAudio of allRemoteAudio) {
+            let remoteAudioStream = remoteAudio.srcObject;
+
+            if (remoteAudioStream.id == audioIdToStop) {
+                console.log('Stopping remoteAudioStream', remoteAudio);
+
+                remoteAudioStream.getTracks().forEach(track => track.stop());
+                remoteAudioStream = null;
+
+                remoteAudio.style.display = 'none';
+
+                const parentNode = remoteAudio.parentNode;
+
+                parentNode.remove();
+            }
+        }
+    })
     
     socket.on('receiveStopRemoteStream', (streamIdToStop) => {
     
@@ -291,7 +314,6 @@ function mainScript() {
 
                 const parentNode = remoteVideo.parentNode;
 
-                console.log('parentNode', parentNode);
                 parentNode.remove();
             }
         }
@@ -661,6 +683,7 @@ function mainScript() {
         
         screenStream = null;
 
+        socket.emit('sendRemoteAudioStopped', audioStream.id);
         audioStream.getTracks().forEach(track => track.stop());
 
         audioStream = null;

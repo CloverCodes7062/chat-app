@@ -282,6 +282,12 @@ io.on('connection', (socket) => {
         console.log('Peer Disconnected', peerId);
         socket.broadcast.emit('remotePeerDisconnected', peerId);
     })
+
+    socket.on('sendRemoteAudioStopped', (audioId) => {
+        console.log('received AudioId', audioId);
+        
+        socket.broadcast.emit('receiveStopRemoteAudio', audioId);
+    })
 })
 
 server.listen(3000, () => {
