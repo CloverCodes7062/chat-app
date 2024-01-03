@@ -474,6 +474,60 @@ function mainScript() {
 
             } else if (stream.getAudioTracks().length > 0) {
                 console.log('Audio Stream Received');
+
+                const remoteAudioStreamsContainer = document.getElementById('remoteAudioStreams');
+                const remoteAudioStreamContainer = document.createElement('div');
+                remoteAudioStreamContainer.className = 'remoteAudioStreamContainer';
+
+                remoteAudioStreamsContainer.appendChild(remoteAudioStreamContainer);
+
+                const remoteAudioVisualizer = document.createElement('img');
+                remoteAudioVisualizer.className = 'remoteAudioVisualizer'
+                remoteAudioVisualizer.src = callerVisualizerSrc;
+                remoteAudioVisualizer.width = 125;
+                remoteAudioVisualizer.height = 125;
+                remoteAudioVisualizer.style.borderRadius = '50%';
+
+                remoteAudioStreamContainer.appendChild(remoteAudioVisualizer);
+
+                const remoteAudio = document.createElement('audio');
+                remoteAudio.className = 'remoteAudio';
+                remoteAudio.autoplay = true;
+                remoteAudio.srcObject = stream;
+
+                remoteAudioStreamContainer.appendChild(remoteAudio);
+
+                remoteAudioStreamContainer.style.pointerEvents = 'auto';
+
+                const audioContext = new (window.AudioContext)();
+                const sourceNode = audioContext.createMediaStreamSource(remoteAudio.srcObject);
+                
+                const analyser = audioContext.createAnalyser();
+                sourceNode.connect(analyser);
+
+                analyser.fftSize = 2048;
+                const bufferLength = analyser.frequencyBinCount;
+                const dataArray = new Uint8Array(bufferLength);
+
+                function isLocalAudioPlaying() {
+                    analyser.getByteFrequencyData(dataArray);
+                    const average = dataArray.reduce((sum, value) => sum + value, 0) / bufferLength;
+
+                    const threshold = 10;
+
+                    return average > threshold;
+                }
+
+                setInterval(() => {
+                    if (isLocalAudioPlaying()) {
+                        console.log('Audio is actively playing');
+                        remoteAudioVisualizer.style.border = '5px solid green';
+                    } else {
+                        console.log('Audio is NOT actively playing');
+                        remoteAudioVisualizer.style.border = 'none';
+                    }
+                }, 100);
+                
             } else {
                 console.log('No video or audio tracks');
             }
