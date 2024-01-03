@@ -80,15 +80,30 @@ function mainScript() {
         console.log(`Sending Back PeerId ${peerId} to remotePeerId ${remotePeerId}`);
         socket.emit('sendBackPeerId', peerId);
 
+        const localAudioVisualizer = document.getElementById('localAudioVisualizer');
+        const src = localAudioVisualizer.src;
+
         if (screenStream) {
             const userName = userNameOfSender;
 
             const callOptions = {
-                metadata: { peerId: peerId, userNameOfSender:  userName},
+                metadata: { peerId: peerId, userNameOfSender:  userName,  senderVisualizerSrc: src },
             };
 
             console.log(`calling receivedPeerId ${receivedPeerId} with current screenStream`);
             const call = peer.call(receivedPeerId, screenStream, callOptions);
+            
+        }
+
+        if (audioStream) {
+            const userName = userNameOfSender;
+
+            const callOptions = {
+                metadata: { peerId: peerId, userNameOfSender:  userName,  senderVisualizerSrc: src },
+            };
+
+            console.log(`calling receivedPeerId ${receivedPeerId} with current audioStream`);
+            const call = peer.call(receivedPeerId, audioStream, callOptions);
         }
     });
     
