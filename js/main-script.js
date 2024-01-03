@@ -497,6 +497,35 @@ function mainScript() {
 
                 remoteAudioStreamContainer.appendChild(remoteAudio);
 
+                const volumeSliderContainer = document.createElement('div');
+                volumeSliderContainer.className = 'volumeSliderContainer';
+
+                remoteAudioStreamContainer.appendChild(volumeSliderContainer);
+
+                const volumeSlider = document.createElement('input');
+                volumeSlider.className = 'volumeSlider';
+                volumeSlider.type = 'range';
+                volumeSlider.name = 'volumeSlider';
+                volumeSlider.min = '0';
+                volumeSlider.max = '1';
+                volumeSlider.step = '0.05';
+
+                volumeSlider.addEventListener('input', () => {
+                    const volumeSliderCurrentValue = volumeSlider.value;
+                    console.log('volumeSliderCurrentValue', volumeSliderCurrentValue);
+                });
+
+                volumeSliderContainer.appendChild(volumeSlider);
+
+                const volumeSliderLabel = document.createElement('label');
+                volumeSliderLabel.className = 'volumeSliderLabel';
+                volumeSliderLabel.htmlFor = 'volumeSlider';
+                volumeSliderLabel.style.color = 'white';
+                volumeSliderLabel.style.textAlign = 'center';
+                volumeSliderLabel.textContent = 'Volume';
+
+                volumeSliderContainer.appendChild(volumeSliderLabel);
+
                 const audioContext = new (window.AudioContext)();
                 const sourceNode = audioContext.createMediaStreamSource(remoteAudio.srcObject);
                 
