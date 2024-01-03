@@ -207,7 +207,7 @@ app.get('/generateDefaultImg', (req, res) => {
     const canvas = createCanvas(width, height);
     const ctx = canvas.getContext('2d');
 
-    ctx.fillStyle = 'red';
+    ctx.fillStyle = `#${Math.floor(Math.random() * 16777215).toString(16)}`;
     ctx.fillRect(0, 0, width, height);
 
     ctx.font = '62px Arial';
@@ -224,6 +224,15 @@ app.get('/generateDefaultImg', (req, res) => {
 
     res.contentType('image/jpeg');
     res.end(buffer);
+});
+
+app.get('/testRoute', async (req, res) => {
+    const imageResponse = await axios.get(`https://localhost:3000/generateDefaultImg?initial=${'Stacy'.charAt(0)}`, {
+        httpsAgent: agent,
+        responseType: 'arraybuffer',
+    });
+
+    fs.writeFileSync('output.jpeg', imageResponse.data);
 });
 
 function checkAuthenticated(req, res, next) {

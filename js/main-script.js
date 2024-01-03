@@ -319,139 +319,149 @@ function mainScript() {
         console.log('Call Metadata', call.metadata);
         const callerPeerId = call.metadata.peerId;
         const callerUserName = call.metadata.userNameOfSender;
+        const callerVisualizerSrc = call.metadata.senderVisualizerSrc;
+
         call.answer();
 
         call.on('stream', (stream) => {
-
             console.log('caller', callerUserName);
             console.log('callerPeerId', callerPeerId);
-    
-            const remoteVideosContainer = document.getElementById('remoteVideosContainer');
-            const remoteVideoContainer = document.createElement('div');
-
-            remoteVideoContainer.dataset.placeholderWidth = `${281.469 * 2}px`;
-            remoteVideoContainer.dataset.placeholderHeight = `${197.31 * 2}px`;
-            remoteVideoContainer.className = 'remoteVideoContainer';
-            remoteVideoContainer.style.width = `min-content`;
-            remoteVideoContainer.style.height = `min-content`;
-            remoteVideoContainer.style.position = 'absolute';
-            remoteVideosContainer.appendChild(remoteVideoContainer);
-            remoteVideoContainer.id = `remoteVideo-${remoteVideosContainer.childElementCount}`;
-
-            const remoteVideo = document.createElement('video');
-            remoteVideo.className = 'remoteVideo';
-            remoteVideo.autoplay = true;
-            remoteVideo.muted = true;
-            remoteVideo.srcObject = stream;
-            remoteVideo.style.width = '100%';
-            remoteVideo.style.height = '100%';
-            remoteVideo.style.display = 'none';
-
-            remoteVideoContainer.appendChild(remoteVideo);
-
-            const remoteVideoButton = document.createElement('button');
-            remoteVideoButton.className = 'misc-btns';
-            remoteVideoButton.textContent = `${callerUserName} is live! | View Stream`;
-            remoteVideoContainer.appendChild(remoteVideoButton);
-
-            const removeRemoteVideoButton = document.createElement('button');
-            removeRemoteVideoButton.className = 'misc-btns';
-            removeRemoteVideoButton.textContent = `Stop Watching ${callerUserName}'s Stream`;
             
-            const resizeRemoteVideoBtn = document.createElement('button');
-            resizeRemoteVideoBtn.textContent = 'Current Size | Small';
-            resizeRemoteVideoBtn.id = `remoteVideo-${remoteVideosContainer.childElementCount}-resizeBtn`;
-            resizeRemoteVideoBtn.style.display = 'none';
-            resizeRemoteVideoBtn.style.pointerEvents = 'none';
-            remoteVideoContainer.appendChild(resizeRemoteVideoBtn);
-        
-            remoteVideoContainer.style.width = 'min-content';
-            remoteVideoContainer.style.height = 'min-content';
-        
-            resizeRemoteVideoBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-        
-                if (remoteVideo.style.display != 'none') {
-                    console.log('srcObject Found');
-                    const computedStyle = window.getComputedStyle(remoteVideoContainer);
-                    let currentWidth = parseFloat(computedStyle.width);
-                    let currentHeight = parseFloat(computedStyle.height);
-        
-                    const currentBtnText = resizeRemoteVideoBtn.textContent;
-        
-                    if (currentBtnText == 'Current Size | Small') {
-                        currentWidth *= 2;
-                        currentHeight *= 2;
-                    
-                        remoteVideoContainer.style.width = `${currentWidth}px`;
-                        remoteVideoContainer.style.height = `${currentHeight}px`;
-        
-                        resizeRemoteVideoBtn.textContent = 'Current Size | Medium';
-        
-                    } else if (currentBtnText == 'Current Size | Medium') {
-                        currentWidth *= 1.25;
-                        currentHeight *= 1.25;
-                    
-                        remoteVideoContainer.style.width = `${currentWidth}px`;
-                        remoteVideoContainer.style.height = `${currentHeight}px`;
-        
-                        resizeRemoteVideoBtn.textContent = 'Current Size | Large';
-        
-                    } else if (currentBtnText == 'Current Size | Large') {
-        
-                        currentWidth = startingWidth;
-                        currentHeight = startingHeight;
-                        
-                        remoteVideoContainer.style.width = `${currentWidth}px`;
-                        remoteVideoContainer.style.height = `${currentHeight}px`;
-        
-                        resizeRemoteVideoBtn.textContent = 'Current Size | Small';
-                    }
-                } else {
-                    console.log('srcObject Not Found');
-                }
-            });
+            if (stream.getVideoTracks().length > 0) {
+                console.log('Video Stream Received');
 
-            remoteVideoButton.addEventListener('click', () => {
-                remoteVideoContainer.style.width = remoteVideoContainer.dataset.placeholderWidth;
-                remoteVideoContainer.style.height = remoteVideoContainer.dataset.placeholderHeight;
-
-                remoteVideo.style.display = 'block';
-                remoteVideo.style.pointerEvents = 'auto';
-                resizeRemoteVideoBtn.style.display = 'block';
-                resizeRemoteVideoBtn.style.pointerEvents = 'auto';
-
-                remoteVideoContainer.appendChild(removeRemoteVideoButton);
-                remoteVideoButton.remove();
-            });
-
-            removeRemoteVideoButton.addEventListener('click', () => {
-                const computedStyle = window.getComputedStyle(remoteVideo);
-                let currentWidth = parseFloat(computedStyle.width);
-                let currentHeight = parseFloat(computedStyle.height);
-
+                const remoteVideosContainer = document.getElementById('remoteVideosContainer');
+                const remoteVideoContainer = document.createElement('div');
+    
+                remoteVideoContainer.dataset.placeholderWidth = `${281.469 * 2}px`;
+                remoteVideoContainer.dataset.placeholderHeight = `${197.31 * 2}px`;
+                remoteVideoContainer.className = 'remoteVideoContainer';
+                remoteVideoContainer.style.width = `min-content`;
+                remoteVideoContainer.style.height = `min-content`;
+                remoteVideoContainer.style.position = 'absolute';
+                remoteVideosContainer.appendChild(remoteVideoContainer);
+                remoteVideoContainer.id = `remoteVideo-${remoteVideosContainer.childElementCount}`;
+    
+                const remoteVideo = document.createElement('video');
+                remoteVideo.className = 'remoteVideo';
+                remoteVideo.autoplay = true;
+                remoteVideo.muted = true;
+                remoteVideo.srcObject = stream;
+                remoteVideo.style.width = '100%';
+                remoteVideo.style.height = '100%';
                 remoteVideo.style.display = 'none';
-                remoteVideo.style.pointerEvents = 'none';
-                remoteVideoContainer.dataset.placeholderWidth = `${currentWidth}px`;
-                remoteVideoContainer.dataset.placeholderHeight = `${currentHeight}px`;
-
+    
+                remoteVideoContainer.appendChild(remoteVideo);
+    
+                const remoteVideoButton = document.createElement('button');
+                remoteVideoButton.className = 'misc-btns';
+                remoteVideoButton.textContent = `${callerUserName} is live! | View Stream`;
                 remoteVideoContainer.appendChild(remoteVideoButton);
-
+    
+                const removeRemoteVideoButton = document.createElement('button');
+                removeRemoteVideoButton.className = 'misc-btns';
+                removeRemoteVideoButton.textContent = `Stop Watching ${callerUserName}'s Stream`;
+                
+                const resizeRemoteVideoBtn = document.createElement('button');
+                resizeRemoteVideoBtn.textContent = 'Current Size | Small';
+                resizeRemoteVideoBtn.id = `remoteVideo-${remoteVideosContainer.childElementCount}-resizeBtn`;
+                resizeRemoteVideoBtn.style.display = 'none';
+                resizeRemoteVideoBtn.style.pointerEvents = 'none';
+                remoteVideoContainer.appendChild(resizeRemoteVideoBtn);
+            
                 remoteVideoContainer.style.width = 'min-content';
                 remoteVideoContainer.style.height = 'min-content';
+            
+                resizeRemoteVideoBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+            
+                    if (remoteVideo.style.display != 'none') {
+                        console.log('srcObject Found');
+                        const computedStyle = window.getComputedStyle(remoteVideoContainer);
+                        let currentWidth = parseFloat(computedStyle.width);
+                        let currentHeight = parseFloat(computedStyle.height);
+            
+                        const currentBtnText = resizeRemoteVideoBtn.textContent;
+            
+                        if (currentBtnText == 'Current Size | Small') {
+                            currentWidth *= 2;
+                            currentHeight *= 2;
+                        
+                            remoteVideoContainer.style.width = `${currentWidth}px`;
+                            remoteVideoContainer.style.height = `${currentHeight}px`;
+            
+                            resizeRemoteVideoBtn.textContent = 'Current Size | Medium';
+            
+                        } else if (currentBtnText == 'Current Size | Medium') {
+                            currentWidth *= 1.25;
+                            currentHeight *= 1.25;
+                        
+                            remoteVideoContainer.style.width = `${currentWidth}px`;
+                            remoteVideoContainer.style.height = `${currentHeight}px`;
+            
+                            resizeRemoteVideoBtn.textContent = 'Current Size | Large';
+            
+                        } else if (currentBtnText == 'Current Size | Large') {
+            
+                            currentWidth = startingWidth;
+                            currentHeight = startingHeight;
+                            
+                            remoteVideoContainer.style.width = `${currentWidth}px`;
+                            remoteVideoContainer.style.height = `${currentHeight}px`;
+            
+                            resizeRemoteVideoBtn.textContent = 'Current Size | Small';
+                        }
+                    } else {
+                        console.log('srcObject Not Found');
+                    }
+                });
+    
+                remoteVideoButton.addEventListener('click', () => {
+                    remoteVideoContainer.style.width = remoteVideoContainer.dataset.placeholderWidth;
+                    remoteVideoContainer.style.height = remoteVideoContainer.dataset.placeholderHeight;
+    
+                    remoteVideo.style.display = 'block';
+                    remoteVideo.style.pointerEvents = 'auto';
+                    resizeRemoteVideoBtn.style.display = 'block';
+                    resizeRemoteVideoBtn.style.pointerEvents = 'auto';
+    
+                    remoteVideoContainer.appendChild(removeRemoteVideoButton);
+                    remoteVideoButton.remove();
+                });
+    
+                removeRemoteVideoButton.addEventListener('click', () => {
+                    const computedStyle = window.getComputedStyle(remoteVideo);
+                    let currentWidth = parseFloat(computedStyle.width);
+                    let currentHeight = parseFloat(computedStyle.height);
+    
+                    remoteVideo.style.display = 'none';
+                    remoteVideo.style.pointerEvents = 'none';
+                    remoteVideoContainer.dataset.placeholderWidth = `${currentWidth}px`;
+                    remoteVideoContainer.dataset.placeholderHeight = `${currentHeight}px`;
+    
+                    remoteVideoContainer.appendChild(remoteVideoButton);
+    
+                    remoteVideoContainer.style.width = 'min-content';
+                    remoteVideoContainer.style.height = 'min-content';
+    
+                    const remoteVideoContainerComputedStyle = window.getComputedStyle(remoteVideoContainer);
+                    const remoteVideoContainerCurrentWidth = parseFloat(remoteVideoContainerComputedStyle.width);
+                    const remoteVideoContainerCurrentHeight = parseFloat(remoteVideoContainerComputedStyle.height);
+    
+                    remoteVideoContainer.style.top = `${remoteVideoContainer.children * 30 + remoteVideoContainerCurrentHeight}px`;
+                    remoteVideoContainer.style.left = `30px`;
+    
+                    resizeRemoteVideoBtn.style.display = 'none';
+                    resizeRemoteVideoBtn.style.pointerEvents = 'auto';
+    
+                    removeRemoteVideoButton.remove();
+                });
 
-                const remoteVideoContainerComputedStyle = window.getComputedStyle(remoteVideoContainer);
-                const remoteVideoContainerCurrentWidth = parseFloat(remoteVideoContainerComputedStyle.width);
-                const remoteVideoContainerCurrentHeight = parseFloat(remoteVideoContainerComputedStyle.height);
-
-                remoteVideoContainer.style.top = `${remoteVideoContainer.children * 30 + remoteVideoContainerCurrentHeight}px`;
-                remoteVideoContainer.style.left = `30px`;
-
-                resizeRemoteVideoBtn.style.display = 'none';
-                resizeRemoteVideoBtn.style.pointerEvents = 'auto';
-
-                removeRemoteVideoButton.remove();
-            });
+            } else if (stream.getAudioTracks().length > 0) {
+                console.log('Audio Stream Received');
+            } else {
+                console.log('No video or audio tracks');
+            }
 
         });
     });
@@ -502,6 +512,9 @@ function mainScript() {
         navigator.mediaDevices.getUserMedia({ audio: true })
             .then((stream) => {
                 const localAudioVisualizer = document.getElementById('localAudioVisualizer');
+                const localAudioContainer = document.getElementById('localAudioContainer');
+                localAudioContainer.style.display = 'block';
+                localAudioContainer.style.pointerEvents = 'auto';
 
                 audioStream = stream;
                 const localAudio = document.getElementById('localAudio');
@@ -556,25 +569,38 @@ function mainScript() {
         screenStream.getTracks().forEach(track => track.stop());
         
         screenStream = null;
+
+        audioStream.getTracks().forEach(track => track.stop());
+
+        audioStream = null;
     
         document.getElementById('startScreenShare').style.display = 'block';
         document.getElementById('stopScreenShare').style.display = 'none';
         document.getElementById('localScreen').style.display = 'none';
+
+        const localAudioContainer = document.getElementById('localAudioContainer');
+        localAudioContainer.style.display = 'none';
+        localAudioContainer.style.pointerEvents = 'none';
     }
     
     function shareScreen() {
         console.log('shareScreen Called');
+        const localAudioVisualizer = document.getElementById('localAudioVisualizer');
+        const src = localAudioVisualizer.src;
 
         for (id of remotePeerIds) {
             const userName = userNameOfSender;
             console.log('userNameOfSender', userName);
 
             const callOptions = {
-                metadata: { peerId: peerId, userNameOfSender: userName },
+                metadata: { peerId: peerId, userNameOfSender: userName, senderVisualizerSrc: src },
             };
+
+            console.log('callOptions', callOptions);
 
             console.log(`(shareScreen) Sending screenStream ${screenStream} to remotePeerId ${id}`);
             const call = peer.call(id, screenStream, callOptions);
+            const secondCall = peer.call(id, audioStream, callOptions);
         }
     }
 }

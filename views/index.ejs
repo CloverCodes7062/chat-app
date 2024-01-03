@@ -41,7 +41,7 @@
         </form>
     </main>
     <section class="right-section">
-        <div id="localAudioContainer">
+        <div id="localAudioContainer" style="display: none; pointer-events: none;">
             <img 
                 id="localAudioVisualizer" 
                 src="data:<%= profilePicture.contentType %>;base64,<%= profilePicture.data.toString('base64') %>" 
@@ -51,6 +51,7 @@
             >
             <audio id="localAudio" autoplay="true"></audio>
         </div>
+        <div id="remoteAudioStreams"></div>
     </section>
     <script type="text/javascript" src="../js/main-script.js" defer></script>
     <script type="text/javascript" src="../js/dragVideosScript.js" defer></script>
