@@ -497,8 +497,6 @@ function mainScript() {
 
                 remoteAudioStreamContainer.appendChild(remoteAudio);
 
-                remoteAudioStreamContainer.style.pointerEvents = 'auto';
-
                 const audioContext = new (window.AudioContext)();
                 const sourceNode = audioContext.createMediaStreamSource(remoteAudio.srcObject);
                 
@@ -520,10 +518,8 @@ function mainScript() {
 
                 setInterval(() => {
                     if (isLocalAudioPlaying()) {
-                        console.log('Audio is actively playing');
                         remoteAudioVisualizer.style.border = '5px solid green';
                     } else {
-                        console.log('Audio is NOT actively playing');
                         remoteAudioVisualizer.style.border = 'none';
                     }
                 }, 100);
@@ -610,10 +606,8 @@ function mainScript() {
 
                 setInterval(() => {
                     if (isLocalAudioPlaying()) {
-                        console.log('Audio is actively playing');
                         localAudioVisualizer.style.border = '5px solid green';
                     } else {
-                        console.log('Audio is NOT actively playing');
                         localAudioVisualizer.style.border = 'none';
                     }
                 }, 100);
