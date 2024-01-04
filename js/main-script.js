@@ -510,6 +510,7 @@ function mainScript() {
                 remoteAudioVisualizer.width = 125;
                 remoteAudioVisualizer.height = 125;
                 remoteAudioVisualizer.style.borderRadius = '50%';
+                remoteAudioVisualizer.style.pointerEvents = 'none';
 
                 remoteAudioStreamContainer.appendChild(remoteAudioVisualizer);
 
@@ -527,15 +528,20 @@ function mainScript() {
 
                 const volumeSlider = document.createElement('input');
                 volumeSlider.className = 'volumeSlider';
-                volumeSlider.type = 'range';
+                volumeSlider.type = 'number';
                 volumeSlider.name = 'volumeSlider';
                 volumeSlider.min = '0';
                 volumeSlider.max = '1';
                 volumeSlider.step = '0.05';
+                volumeSlider.value = remoteAudio.volume.toFixed(2);
 
                 volumeSlider.addEventListener('input', () => {
                     remoteAudio.volume = volumeSlider.value;
                 });
+
+                volumeSlider.setAttribute('inputmode', 'numeric');
+                volumeSlider.setAttribute('pattern', '[0-9]*');
+                volumeSlider.setAttribute('title', 'Please enter a numeric value.');
 
                 volumeSliderContainer.appendChild(volumeSlider);
 
