@@ -7,17 +7,18 @@
     <title>Login</title>
     <link rel="stylesheet" href="../css/login.css"/>
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
 </head>
 <body>
     <div class="wrapper">
         <form action="/login" method="POST">
             <h1>Login</h1>
             <% if (messages.error) { %>
-                <%= messages.error %>
+                <p id="message-error-p"> <%= messages.error %> </p>
             <% } %>
             <div class="input-box">
                 <input type="email" name="email" id="email" placeholder="Email" required>
-                <i class='bx bxs-user'></i>
+                <i class='bx bxs-envelope'></i>
             </div>
             <div class="input-box">
                 <input type="password" name="password" id="password" placeholder="Password" required>

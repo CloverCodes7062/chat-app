@@ -115,7 +115,3 @@ body {
 .register-link p a:hover {
   text-decoration: underline;
 }
-
-#message-error-p {
-    text-align: center;
-}
