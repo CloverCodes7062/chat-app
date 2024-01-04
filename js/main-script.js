@@ -500,11 +500,13 @@ function mainScript() {
                 const remoteAudioStreamsContainer = document.getElementById('remoteAudioStreams');
                 const remoteAudioStreamContainer = document.createElement('div');
                 remoteAudioStreamContainer.className = 'remoteAudioStreamContainer';
+                remoteAudioStreamContainer.style.position = 'absolute';
 
                 remoteAudioStreamsContainer.appendChild(remoteAudioStreamContainer);
+                remoteAudioStreamContainer.id = `remoteStreamContainer-${remoteAudioStreamsContainer.childElementCount}`
 
                 const remoteAudioVisualizer = document.createElement('img');
-                remoteAudioVisualizer.className = 'remoteAudioVisualizer'
+                remoteAudioVisualizer.className = 'remoteAudioVisualizer';
                 remoteAudioVisualizer.src = callerVisualizerSrc;
                 remoteAudioVisualizer.width = 125;
                 remoteAudioVisualizer.height = 125;
@@ -573,6 +575,9 @@ function mainScript() {
                         remoteAudioVisualizer.style.border = 'none';
                     }
                 }, 100);
+
+                runDragVideosScript(remoteAudioStreamContainer.id);
+
                 
             } else {
                 console.log('No video or audio tracks');

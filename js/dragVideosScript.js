@@ -1,4 +1,5 @@
 function runDragVideosScript(container) {
+    console.log('runDragVideosScript called', container);
     let isDragging = false;
     let offsetX, offsetY;
 
