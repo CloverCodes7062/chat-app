@@ -535,8 +535,37 @@ function mainScript() {
                 volumeSlider.step = '0.05';
                 volumeSlider.value = remoteAudio.volume.toFixed(2);
 
+                const muteRemoteAudioBtn = document.createElement('button');
+
+                muteRemoteAudioBtn.className = 'muteRemoteAudioBtn';
+                muteRemoteAudioBtn.textContent = 'Mute Audio';
+                muteRemoteAudioBtn.dataset.previousVolume = '0';
+
+                muteRemoteAudioBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    console.log('muteRemoteAudioBtn CLICKED');
+                    const currentBtnText = muteRemoteAudioBtn.textContent;
+                    console.log('currentBtnText', currentBtnText);
+
+                    if (currentBtnText == 'Mute Audio') {
+                        const currentVolume = remoteAudio.volume;
+                        remoteAudio.volume = 0;
+                        muteRemoteAudioBtn.dataset.previousVolume = currentVolume;
+                        muteRemoteAudioBtn.textContent = 'Unmute Audio';
+                    }
+
+                    if (currentBtnText == 'Unmute Audio') {
+                        remoteAudio.volume = muteRemoteAudioBtn.dataset.previousVolume;
+                        muteRemoteAudioBtn.dataset.previousVolume = '0';
+                        muteRemoteAudioBtn.textContent = 'Mute Audio';
+                    }
+                });
+
+                volumeSliderContainer.appendChild(muteRemoteAudioBtn);
+
                 volumeSlider.addEventListener('input', () => {
                     remoteAudio.volume = volumeSlider.value;
+                    muteRemoteAudioBtn.dataset.previousVolume = volumeSlider.value;
                 });
 
                 volumeSlider.setAttribute('inputmode', 'numeric');
