@@ -503,7 +503,6 @@ function mainScript() {
                 remoteAudioStreamContainer.style.position = 'absolute';
 
                 remoteAudioStreamsContainer.appendChild(remoteAudioStreamContainer);
-                remoteAudioStreamContainer.id = `remoteStreamContainer-${remoteAudioStreamsContainer.childElementCount}`
 
                 const remoteAudioVisualizer = document.createElement('img');
                 remoteAudioVisualizer.className = 'remoteAudioVisualizer';
@@ -576,8 +575,34 @@ function mainScript() {
                     }
                 }, 100);
 
-                runDragVideosScript(remoteAudioStreamContainer.id);
+                runMakeElementDraggableScript(remoteAudioStreamContainer);
 
+                function runMakeElementDraggableScript(htmlElement) {
+                    let isDragging = false;
+                    let offsetX, offsetY;
+                
+                    htmlElement.addEventListener('mousedown', (e) => {
+                        isDragging = true;
+                        offsetX = e.clientX - htmlElement.getBoundingClientRect().left;
+                        offsetY = e.clientY - htmlElement.getBoundingClientRect().top;
+                        htmlElement.style.cursor = 'grabbing';
+                    });
+                
+                    document.addEventListener('mousemove', (e) => {
+                        if (!isDragging) return;
+                
+                        const x = e.clientX - offsetX;
+                        const y = e.clientY - offsetY;
+                
+                        htmlElement.style.left = `${x}px`;
+                        htmlElement.style.top = `${y}px`;
+                    });
+                
+                    document.addEventListener('mouseup', () => {
+                        isDragging = false;
+                        htmlElement.style.cursor = 'grab';
+                    });
+                }
                 
             } else {
                 console.log('No video or audio tracks');
