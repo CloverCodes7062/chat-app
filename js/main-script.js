@@ -376,6 +376,7 @@ function mainScript() {
                 remoteVideoContainer.style.width = `min-content`;
                 remoteVideoContainer.style.height = `min-content`;
                 remoteVideoContainer.style.position = 'absolute';
+                remoteVideoContainer.style.zIndex = '101';
                 remoteVideosContainer.appendChild(remoteVideoContainer);
                 remoteVideoContainer.id = `remoteVideo-${remoteVideosContainer.childElementCount}`;
     
