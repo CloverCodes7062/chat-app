@@ -138,7 +138,8 @@ function mainScript() {
         const receivedMsgList = document.getElementById('receivedMsgList');
 
         const listItem = document.createElement('div');
-        
+        listItem.style.position = "relative";
+
         const formattedDate = formatDate(message.sentOn);
         
         const uint8Array = new Uint8Array(message.profilePicture.data.data);
@@ -224,6 +225,7 @@ function mainScript() {
         messages.forEach((message) => {
             const formattedDate = formatDate(message.sentOn);
             const listItem = document.createElement('div');
+            listItem.style.position = "relative";
             
             const uint8Array = new Uint8Array(message.sentByPicture.data);
             const base64String = btoa(String.fromCharCode.apply(null, uint8Array));

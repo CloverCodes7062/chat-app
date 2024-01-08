@@ -6,6 +6,12 @@
     visibility: hidden;
 }
 
+.delete-msg-btn {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+}
+
 .header {
     position: absolute;
     z-index: 99;
