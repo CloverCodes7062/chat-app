@@ -2,6 +2,10 @@
     font-family: "Poppins", sans-serif !important;
 }
 
+#messages-container {
+    visibility: hidden;
+}
+
 .header {
     position: absolute;
     z-index: 99;
@@ -10,8 +14,8 @@
 }
 
 .chat-msg {
-    width: 300px;
-    height: auto;
+    min-width: 300px;
+    max-width: fit-content;
 }
 
 .msg-li {
@@ -29,7 +33,11 @@
 .msg-body {
     width: 100%;
     text-align: center;
-    margin-left: -45px;;
+    word-wrap: break-word;
+    max-width: 300px;
+    margin-left: 25px;
+    position: relative;
+    left: -25px;
 }
 
 .msg-date {
