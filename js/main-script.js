@@ -13,6 +13,21 @@ function mainScript() {
         const formattedDate = new Date(sentOn).toLocaleString(undefined, options);
         return formattedDate;
     }
+
+    function formatDateShort(date) {
+        const options = {
+            year: 'numeric',
+            month: '2-digit',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: 'numeric',
+            second: 'numeric',
+            hour12: true
+        }
+
+        const formattedDateShort = new Date(date).toLocaleString(undefined, options);
+        return formattedDateShort;
+    }
     
     document.addEventListener('DOMContentLoaded', () => {
         const sendMsgForm = document.getElementById('preventDefault-POST');
@@ -119,18 +134,31 @@ function mainScript() {
     
     socket.on('newMessage', async (message) => {
         console.log('New Message Event Triggered');
-    
         const sentMsgList = document.getElementById('sentMsgList');
         const receivedMsgList = document.getElementById('receivedMsgList');
 
         const listItem = document.createElement('div');
         
         const formattedDate = formatDate(message.sentOn);
+        
+        const uint8Array = new Uint8Array(message.profilePicture.data.data);
+        const base64String = btoa(String.fromCharCode.apply(null, uint8Array));
+        const moreDetailsP = `<p>Sent by ${message.name} on ${formattedDate}</p>`;
+        const formattedDateShort = formatDateShort(message.sentOn);
+
         listItem.innerHTML = `
-            <li>
-                <p>Sent by ${message.name} on ${formattedDate}</p>
-                <p>${message.message}</p>
-            </li>
+        <li class="msg-li">
+            <p class="msg-date">${formattedDateShort}</p>
+            <div class="msg-img-p-container">
+                <img 
+                    src="data:${message.profilePicture.contentType};base64,${base64String}"
+                    width="45" 
+                    height="45" 
+                    style="border-radius: 50%;"
+                >
+                <p class="msg-body">${message.message}</p>
+            </div>
+        </li>
         `;
 
         listItem.dataset.messageId = message._id;
@@ -196,17 +224,29 @@ function mainScript() {
         messages.forEach((message) => {
             const formattedDate = formatDate(message.sentOn);
             const listItem = document.createElement('div');
-    
+            
+            const uint8Array = new Uint8Array(message.sentByPicture.data);
+            const base64String = btoa(String.fromCharCode.apply(null, uint8Array));
+            const moreDetailsP = `<p>Sent by ${message.name} on ${formattedDate}</p>`;
+            const formattedDateShort = formatDateShort(message.sentOn);
+
             listItem.innerHTML = `
-                <li>
-                    <p>Sent by ${message.name} on ${formattedDate}</p>
-                    <p>${message.message}</p>
-                </li>
+            <li class="msg-li">
+                <p class="msg-date">${formattedDateShort}</p>
+                <div class="msg-img-p-container">
+                    <img 
+                        src="data:${message.sentByPicture.contentType};base64,${base64String}"
+                        width="45" 
+                        height="45" 
+                        style="border-radius: 50%;"
+                    >
+                    <p class="msg-body">${message.message}</p>
+                </div>
+            </li>
             `;
 
             messagesList.appendChild(listItem);
             listItem.dataset.messageId = message.id;
-    
             axios.get(`/canDelete?id=${message.id}`)
                 .then((response) => {
                     if (response.status == 204) {
@@ -225,7 +265,7 @@ function mainScript() {
                                     console.log('Message Deleted from DB');
                                 })
                                 .catch((error) => {
-                                    console.error('Server Error Delete Message', error);
+                                    console.error('Server Error Delete Message');
                                 });
                         });
                         listItem.appendChild(deleteForm);

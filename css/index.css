@@ -5,6 +5,34 @@
     pointer-events: none;
 }
 
+.chat-msg {
+    width: 300px;
+    height: auto;
+}
+
+.msg-li {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.msg-img-p-container {
+    width: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.msg-body {
+    width: 100%;
+    text-align: center;
+    margin-left: -45px;;
+}
+
+.msg-date {
+    font-size: 12px;
+    margin-left: auto;
+}
+
 body {
     display: flex;
     justify-content: center;
@@ -25,6 +53,8 @@ body {
 }
 
 #localScreenContainer {
+    resize: both;
+    overflow: auto;
     position: absolute;
     top: 30px;
     left: 30px;

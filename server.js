@@ -53,6 +53,7 @@ const messageSchema = new mongoose.Schema({
     sentBy: String,
     name: String,
     message: String,
+    profilePicture: { data: Buffer, contentType: String },
 });
 
 const User = mongoose.model('User', userSchema);
@@ -91,6 +92,7 @@ app.post('/', checkAuthenticated, async (req, res) => {
             sentBy: user.email,
             name: user.name,
             message: reqMessage,
+            profilePicture: user.profilePicture,
         });
     
         if (message) {
@@ -143,7 +145,7 @@ app.get('/canDelete', async (req, res) => {
             }
         })
         .catch((error) => {
-            console.log('Server Error Checking if canDelete', error);
+            console.log('Server Error Checking if canDelete');
             res.status(500).send();
         });
 });
@@ -227,12 +229,14 @@ app.get('/generateDefaultImg', (req, res) => {
 });
 
 app.get('/testRoute', async (req, res) => {
-    const imageResponse = await axios.get(`https://localhost:3000/generateDefaultImg?initial=${'Stacy'.charAt(0)}`, {
-        httpsAgent: agent,
-        responseType: 'arraybuffer',
-    });
+    const messages = await Messages.find().exec();
 
-    fs.writeFileSync('output.jpeg', imageResponse.data);
+    for (const message of messages) {
+        const profilePicture = (await User.findOne({ email: message.sentBy })).profilePicture;
+        message.profilePicture = profilePicture;
+        console.log('message', message.profilePicture);
+        await message.save().then(console.log('Message in db updated'));
+    }
 });
 
 function checkAuthenticated(req, res, next) {
@@ -266,7 +270,9 @@ io.on('connection', (socket) => {
         console.log('Get New Messages Called');
         const messages = await Messages.find().exec()
         .then(messages => messages.map(message => { 
-            return { sentBy: message.sentBy, sentOn: message.sentOn, message: message.message, id: message._id, name: message.name }
+            return { 
+                sentBy: message.sentBy, sentOn: message.sentOn, message: message.message, id: message._id.toString(), name: message.name, sentByPicture: message.profilePicture 
+            }
         }));
     
         io.emit('resetChatMessages', messages);
