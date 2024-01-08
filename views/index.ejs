@@ -11,6 +11,7 @@
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
     <script src="https://code.jquery.com/ui/1.13.1/jquery-ui.js" integrity="sha256-6XMVI0zB8cRzfZjqKcD01PBsAy3FlDASrlC8SxCpInY=" crossorigin="anonymous"></script>
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
 </head>
 <body>
     <header class="header">
@@ -26,10 +27,11 @@
     <main class="main-section resizable ui-widget-content">
         <div id="messages-container">
             <form id="preventDefault-POST" action="/" method="POST">
-                <div>
-                    <label for="message"></label>
-                    <input type="text" name="message" id="message" placeholder="Enter a message" required>
-                    <button type="submit" id="submit-btn">Submit</button>
+                <div id="submit-msg-div">
+                    <div class="input-box">
+                        <input type="text" name="message" id="message" placeholder="Enter a Message" required>
+                    </div>
+                    <button type="submit" id="submit-btn"><i class='bx bxs-send' style="color: #333; font-size: 24px; background-color: transparent !important;"></i></button>
                 </div>
             </form>
         </div>
