@@ -226,7 +226,7 @@ function mainScript() {
             const formattedDate = formatDate(message.sentOn);
             const listItem = document.createElement('div');
             listItem.style.position = "relative";
-            
+
             const uint8Array = new Uint8Array(message.sentByPicture.data);
             const base64String = btoa(String.fromCharCode.apply(null, uint8Array));
             const moreDetailsP = `<p>Sent by ${message.name} on ${formattedDate}</p>`;
@@ -625,33 +625,39 @@ function mainScript() {
                 volumeSliderLabel.textContent = 'Volume';
 
                 volumeSliderContainer.appendChild(volumeSliderLabel);
+                let hasClicked = false;
 
-                const audioContext = new (window.AudioContext)();
-                const sourceNode = audioContext.createMediaStreamSource(remoteAudio.srcObject);
-                
-                const analyser = audioContext.createAnalyser();
-                sourceNode.connect(analyser);
+                document.addEventListener('mousedown', () => {
+                    if (hasClicked) return;
+                    hasClicked = true;
 
-                analyser.fftSize = 2048;
-                const bufferLength = analyser.frequencyBinCount;
-                const dataArray = new Uint8Array(bufferLength);
-
-                function isLocalAudioPlaying() {
-                    analyser.getByteFrequencyData(dataArray);
-                    const average = dataArray.reduce((sum, value) => sum + value, 0) / bufferLength;
-
-                    const threshold = 10;
-
-                    return average > threshold;
-                }
-
-                setInterval(() => {
-                    if (isLocalAudioPlaying()) {
-                        remoteAudioVisualizer.style.border = '5px solid green';
-                    } else {
-                        remoteAudioVisualizer.style.border = 'none';
+                    const audioContext = new (window.AudioContext)();
+                    const sourceNode = audioContext.createMediaStreamSource(remoteAudio.srcObject);
+                    
+                    const analyser = audioContext.createAnalyser();
+                    sourceNode.connect(analyser);
+    
+                    analyser.fftSize = 2048;
+                    const bufferLength = analyser.frequencyBinCount;
+                    const dataArray = new Uint8Array(bufferLength);
+    
+                    function isLocalAudioPlaying() {
+                        analyser.getByteFrequencyData(dataArray);
+                        const average = dataArray.reduce((sum, value) => sum + value, 0) / bufferLength;
+    
+                        const threshold = 10;
+    
+                        return average > threshold;
                     }
-                }, 100);
+    
+                    setInterval(() => {
+                        if (isLocalAudioPlaying()) {
+                            remoteAudioVisualizer.style.border = '5px solid green';
+                        } else {
+                            remoteAudioVisualizer.style.border = 'none';
+                        }
+                    }, 100);
+                });
 
                 runMakeElementDraggableScript(remoteAudioStreamContainer);
 
