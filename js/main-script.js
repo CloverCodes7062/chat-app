@@ -710,8 +710,15 @@ function mainScript() {
 
                 const resizeLocalScreenBtn = document.getElementById('resize-localScreen-btn');
                 const localScreenContainer = document.getElementById('localScreenContainer');
+                const hideLocalScreenBtn = document.getElementById('hide-localScreen-btn');
+
                 resizeLocalScreenBtn.style.display = 'block';
+                hideLocalScreenBtn.style.display = 'block';
                 localScreenContainer.style.pointerEvents = 'auto';
+
+                hideLocalScreenBtn.addEventListener('click', () => {
+                    
+                });
                 
                 const videoTrack = screenStream.getVideoTracks()[0];
                 const constraints = {
@@ -789,7 +796,10 @@ function mainScript() {
     function stopScreenShare() {
         const resizeLocalScreenBtn = document.getElementById('resize-localScreen-btn');
         const localScreenContainer = document.getElementById('localScreenContainer');
+        const hideLocalScreenBtn = document.getElementById('hide-localScreen-btn');
+
         resizeLocalScreenBtn.style.display = 'none';
+        hideLocalScreenBtn.style.display = 'none';
         localScreenContainer.style.pointerEvents = 'none';
 
         socket.emit('sendStopRemoteStream', screenStream.id);

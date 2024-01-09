@@ -76,6 +76,10 @@ body {
     left: 30px;
     cursor: grab;
     z-index: 100;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 
 #messages-container {
@@ -204,13 +208,6 @@ li {
     list-style: none;
 }
 
-.misc-btns {
-    background-color: rgb(10,130,253);
-    color: #fdfdfd;
-    border: none;
-    border-radius: 10px;
-}
-
 .input-box {
     position: relative !important;
     width: 33% !important;
@@ -254,7 +251,8 @@ li {
     color: #fff !important;
 }
 
-#startScreenShare {
+
+#startScreenShare, #stopScreenShare {
     width: 150px !important;
     height: 30px !important;
     background: #fff !important;
@@ -271,6 +269,21 @@ li {
 
 #logout-btn {
     width: 100px !important;
+    height: 30px !important;
+    background: #fff !important;
+    border: none !important;
+    outline: none !important;
+    border-radius: 40px !important;
+    cursor: pointer !important;
+    font-size: 14px !important;
+    color: #333 !important;
+    font-weight: 600 !important;
+    box-sizing: border-box !important;
+    font-family: "Poppins", sans-serif !important;
+}
+
+.misc-btns {
+    width: 200px !important;
     height: 30px !important;
     background: #fff !important;
     border: none !important;
