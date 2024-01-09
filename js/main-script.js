@@ -717,7 +717,8 @@ function mainScript() {
                 localScreenContainer.style.pointerEvents = 'auto';
 
                 hideLocalScreenBtn.addEventListener('click', () => {
-                    
+                    localScreenContainer.style.display = 'none';
+                    localScreenContainer.style.pointerEvents = 'none';
                 });
                 
                 const videoTrack = screenStream.getVideoTracks()[0];
@@ -751,6 +752,7 @@ function mainScript() {
                 const localAudioContainer = document.getElementById('localAudioContainer');
                 localAudioContainer.style.display = 'block';
                 localAudioContainer.style.pointerEvents = 'auto';
+                runDragVideosScript('localAudioContainer');
 
                 audioStream = stream;
                 const localAudio = document.getElementById('localAudio');

@@ -47,13 +47,13 @@
         </form>
     </main>
     <section class="right-section">
-        <div id="localAudioContainer" style="display: none; pointer-events: none;">
+        <div id="localAudioContainer" style="display: none; pointer-events: none; position: absolute;">
             <img 
                 id="localAudioVisualizer" 
                 src="data:<%= profilePicture.contentType %>;base64,<%= profilePicture.data.toString('base64') %>" 
                 width="125" 
                 height="125" 
-                style="border-radius: 50%;"
+                style="border-radius: 50%; pointer-events: none;"
             >
             <audio id="localAudio" autoplay="true" muted="true"></audio>
         </div>
