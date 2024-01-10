@@ -253,7 +253,7 @@ li {
 }
 
 
-#startScreenShare, #stopScreenShare {
+#startScreenShare, #stopScreenShare, #startAudioCall, #stopAudioCall {
     width: 150px !important;
     height: 30px !important;
     background: #fff !important;
@@ -296,4 +296,10 @@ li {
     font-weight: 600 !important;
     box-sizing: border-box !important;
     font-family: "Poppins", sans-serif !important;
+}
+
+.screenshare-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }

@@ -702,6 +702,62 @@ function mainScript() {
             socket.disconnect();
         }
     });
+
+    document.getElementById('startAudioCall').addEventListener('click', () => {
+        navigator.mediaDevices.getUserMedia({ audio: true })
+        .then((stream) => {
+            const localAudioVisualizer = document.getElementById('localAudioVisualizer');
+            const localAudioContainer = document.getElementById('localAudioContainer');
+            localAudioContainer.style.display = 'block';
+            localAudioContainer.style.pointerEvents = 'auto';
+            document.getElementById('startAudioCall').style.display = 'none';
+            document.getElementById('stopAudioCall').style.display = 'block';
+            runDragVideosScript('localAudioContainer');
+
+            audioStream = stream;
+            const localAudio = document.getElementById('localAudio');
+            localAudio.srcObject = audioStream;
+
+            audioStream.getVideoTracks()[0].onended = () => {
+                stopAudioCall();
+            };
+
+            if (remotePeerIds.length > 0) {
+                startAudioCall();
+            }
+
+            const audioContext = new (window.AudioContext)();
+            const sourceNode = audioContext.createMediaStreamSource(localAudio.srcObject);
+            
+            const analyser = audioContext.createAnalyser();
+            sourceNode.connect(analyser);
+
+            analyser.fftSize = 2048;
+            const bufferLength = analyser.frequencyBinCount;
+            const dataArray = new Uint8Array(bufferLength);
+
+            function isLocalAudioPlaying() {
+                analyser.getByteFrequencyData(dataArray);
+                const average = dataArray.reduce((sum, value) => sum + value, 0) / bufferLength;
+
+                const threshold = 10;
+
+                return average > threshold;
+            }
+
+            setInterval(() => {
+                if (isLocalAudioPlaying()) {
+                    localAudioVisualizer.style.border = '5px solid green';
+                } else {
+                    localAudioVisualizer.style.border = 'none';
+                }
+            }, 100);
+
+        })
+        .catch((error) => {
+            console.error('Error Accessing User Audio: ', error);
+        });
+    });
     
     document.getElementById('startScreenShare').addEventListener('click', () => {
         navigator.mediaDevices.getDisplayMedia({ video: true })
@@ -745,55 +801,28 @@ function mainScript() {
                 .catch(error => console.log('Error Applying Constraints:', error));
             })
             .catch(error => console.log('Error starting the screen share:', error));
-        
-        navigator.mediaDevices.getUserMedia({ audio: true })
-            .then((stream) => {
-                const localAudioVisualizer = document.getElementById('localAudioVisualizer');
-                const localAudioContainer = document.getElementById('localAudioContainer');
-                localAudioContainer.style.display = 'block';
-                localAudioContainer.style.pointerEvents = 'auto';
-                runDragVideosScript('localAudioContainer');
-
-                audioStream = stream;
-                const localAudio = document.getElementById('localAudio');
-                localAudio.srcObject = audioStream;
-
-                const audioContext = new (window.AudioContext)();
-                const sourceNode = audioContext.createMediaStreamSource(localAudio.srcObject);
-                
-                const analyser = audioContext.createAnalyser();
-                sourceNode.connect(analyser);
-
-                analyser.fftSize = 2048;
-                const bufferLength = analyser.frequencyBinCount;
-                const dataArray = new Uint8Array(bufferLength);
-
-                function isLocalAudioPlaying() {
-                    analyser.getByteFrequencyData(dataArray);
-                    const average = dataArray.reduce((sum, value) => sum + value, 0) / bufferLength;
-
-                    const threshold = 10;
-
-                    return average > threshold;
-                }
-
-                setInterval(() => {
-                    if (isLocalAudioPlaying()) {
-                        localAudioVisualizer.style.border = '5px solid green';
-                    } else {
-                        localAudioVisualizer.style.border = 'none';
-                    }
-                }, 100);
-
-            })
-            .catch((error) => {
-                console.error('Error Accessing User Audio: ', error);
-            });
     });
     
     document.getElementById('stopScreenShare').addEventListener('click', () => {
         stopScreenShare();
     });
+
+    document.getElementById('stopAudioCall').addEventListener('click', () => {
+        stopAudioCall();
+    });
+
+    function stopAudioCall() {
+        socket.emit('sendRemoteAudioStopped', audioStream.id);
+        audioStream.getTracks().forEach(track => track.stop());
+
+        audioStream = null;
+
+        const localAudioContainer = document.getElementById('localAudioContainer');
+        document.getElementById('startAudioCall').style.display = 'block';
+        document.getElementById('stopAudioCall').style.display = 'none';
+        localAudioContainer.style.display = 'none';
+        localAudioContainer.style.pointerEvents = 'none';
+    }
     
     function stopScreenShare() {
         const resizeLocalScreenBtn = document.getElementById('resize-localScreen-btn');
@@ -808,19 +837,10 @@ function mainScript() {
         screenStream.getTracks().forEach(track => track.stop());
         
         screenStream = null;
-
-        socket.emit('sendRemoteAudioStopped', audioStream.id);
-        audioStream.getTracks().forEach(track => track.stop());
-
-        audioStream = null;
     
         document.getElementById('startScreenShare').style.display = 'block';
         document.getElementById('stopScreenShare').style.display = 'none';
         document.getElementById('localScreen').style.display = 'none';
-
-        const localAudioContainer = document.getElementById('localAudioContainer');
-        localAudioContainer.style.display = 'none';
-        localAudioContainer.style.pointerEvents = 'none';
     }
     
     function shareScreen() {
@@ -840,7 +860,26 @@ function mainScript() {
 
             console.log(`(shareScreen) Sending screenStream ${screenStream} to remotePeerId ${id}`);
             const call = peer.call(id, screenStream, callOptions);
-            const secondCall = peer.call(id, audioStream, callOptions);
+        }
+    }
+
+    function startAudioCall() {
+        console.log('startAudioCall Called');
+        const localAudioVisualizer = document.getElementById('localAudioVisualizer');
+        const src = localAudioVisualizer.src;
+
+        for (id of remotePeerIds) {
+            const userName = userNameOfSender;
+            console.log('userNameOfSender', userName);
+
+            const callOptions = {
+                metadata: { peerId: peerId, userNameOfSender: userName, senderVisualizerSrc: src },
+            };
+
+            console.log('callOptions', callOptions);
+
+            console.log(`(shareScreen) Sending screenStream ${screenStream} to remotePeerId ${id}`);
+            const call = peer.call(id, audioStream, callOptions);
         }
     }
 }
