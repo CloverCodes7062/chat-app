@@ -15,6 +15,7 @@ import https from 'https';
 import fs from 'fs';
 import { createCanvas, loadImage } from 'canvas';
 import axios from 'axios';
+import multer from 'multer';
 
 dotenv.config();
 
@@ -58,6 +59,9 @@ const messageSchema = new mongoose.Schema({
 
 const User = mongoose.model('User', userSchema);
 const Messages = mongoose.model('Messages', messageSchema);
+
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 
 app.set('view-engine', 'ejs');
 
@@ -234,14 +238,92 @@ app.get('/viewProfile', checkAuthenticated, async (req, res) => {
     res.render('viewProfile.ejs', { name: user.name });
 });
 
-app.post('/viewProfile', async (req, res) => {
-    console.log('POST to /viewProfile received')
+app.post('/viewProfile', upload.single('profileImage'), async (req, res) => {
+    console.log('POST to /viewProfile received');
+
+    const user = await req.user;
+
     const newName = req.body.name || null;
     const newEmail = req.body.email || null;
     const newPassword = req.body.password || null;
-    const newProfilePicture = req.body.profilePicture || null;
+    const newProfilePicture = req.file || null;
 
-    console.log(newName, newEmail, newPassword, newProfilePicture);
+    let hasNameChanged = false;
+    let hasEmailChanged = false;
+    let hasPasswordChanged = false;
+    let hasProfilePictureChanged = false;
+    let newProfilePictureObj;
+
+    if (newName != null) {
+        console.log(`Name Change Detected, changing user ${user.name}'s name`);
+
+        await User.findOneAndUpdate({ email: user.email }, { name: newName });
+
+        hasNameChanged = true;
+    }
+
+    if (newPassword != null) {
+        console.log(`Password Change Detected, changing user ${user.name}'s password `);
+
+        const hashedPassword = await bcrypt.hash(req.body.password, 10);
+        await User.findOneAndUpdate({ email: user.email }, { password: hashedPassword });
+
+        hasPasswordChanged = true;
+    }
+
+    if (newProfilePicture != null) {
+        console.log(`Profile Picture Change Detected, changing user ${user.name}'s profilePicture`);
+
+        newProfilePictureObj = { data: newProfilePicture.buffer, contentType: 'image/jpeg' };
+
+        await User.findOneAndUpdate({ email: user.email }, { profilePicture: newProfilePictureObj });
+
+        hasProfilePictureChanged = true;
+    }
+
+    if (newName != null && newProfilePicture == null) {
+        const imageResponse = await axios.get(`https://localhost:3000/generateDefaultImg?initial=${req.body.name.charAt(0)}`, {
+            httpsAgent: agent,
+            responseType: 'arraybuffer',
+        });
+
+        await User.findOneAndUpdate({ email: user.email }, { profilePicture: { data: imageResponse.data, contentType: 'image/jpeg'} });
+
+        newProfilePictureObj = { data: imageResponse.data, contentType: 'image/jpeg'};
+        hasProfilePictureChanged = true;
+    }
+
+    if (newEmail != null) {
+        console.log(`Email Change Detected, changing user ${user.name}'s email`);
+
+        await User.findOneAndUpdate({ email: user.email }, { email: newEmail });
+
+        hasEmailChanged = true;
+    }
+
+    const messages = await Messages.find().exec();
+
+    for (const message of messages) {
+        if (message.sentBy == user.email) {
+            if (hasNameChanged) {
+                message.name = newName;
+            }
+
+            if (hasEmailChanged) {
+                message.sentBy = newEmail;
+            }
+
+            if (hasProfilePictureChanged) {
+                message.profilePicture = newProfilePictureObj;
+            }
+
+            message.save();
+        }
+    }
+
+    req.logOut(() => {
+        res.redirect('/login');
+    });
 });
 
 app.get('/testRoute', async (req, res) => {
