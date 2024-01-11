@@ -17,6 +17,16 @@
     <object id="loadingSvg" style="position: absolute; z-index: 105;" width="250" height="auto" type="image/svg+xml" data="../images/loadingSvg.svg"></object>
     <header class="header">
         <h1 id="welcomeH1">Hi <%= name %> Welcome To The Chatroom</h1>
+        <nav class="navbar">
+            <div class="menu-icon">&#9776;</div>
+            <ul class="nav-list">
+                <li><a href="/viewProfile">View Profile</a></li>
+                <li><a href="#">Trending</a></li>
+                <li><a href="#">Subscriptions</a></li>
+                <li><a href="#">Library</a></li>
+                <li><a href="#">History</a></li>
+            </ul>
+        </nav>
     </header>
     <section class="left-section">
         <div id="localScreenContainer" style="pointer-events: none;">
@@ -80,6 +90,16 @@
                 messagesContainer.style.visibility = 'visible';
                 messagesContainer.className = 'animate__animated animate__fadeIn';
             }, 1500);
+        });
+    </script>
+    <script text="text/javascript">
+        document.addEventListener('DOMContentLoaded', () => {
+            const menuIcon = document.querySelector('.menu-icon');
+            const navList = document.querySelector('.nav-list');
+
+            menuIcon.addEventListener('click', () => {
+                navList.classList.toggle('show');
+            });
         });
     </script>
 </body>

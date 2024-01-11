@@ -6,6 +6,42 @@
     <title>View Profile</title>
 </head>
 <body>
+    <h1>Welcome <%= name %></h1>
+    <form action="/viewProfile" method="POST">
+        <div class="input-box">
+            <input type="text" name="name" id="name" placeholder="Name">
+            <i class='bx bxs-user'></i>
+        </div>
+        <div class="input-box">
+            <input type="email" name="email" id="email" placeholder="Email">
+            <i class='bx bxs-envelope'></i>
+        </div>
+        <div class="input-box">
+            <input type="password" name="password" id="password" placeholder="Password">
+            <i class='bx bxs-lock-alt'></i>
+        </div>
+        <div class="input-box">
+            <input type="file" name="profileImage" id="profileImage" accept=".jpeg, .jpg, .png" onchange="validateImage()" placeholder="Profile Image (JPEG, PNG, max 150x150)">
+        </div>
+        <button type="submit" id="save-changes-btn">Save Changes</button>
+    </form>
+    <script>
+        function validateImage() {
+            const input = document.getElementById('profileImage');
+            const file = input.files[0];
     
+            if (file) {
+                const img = new Image();
+                img.src = window.URL.createObjectURL(file);
+    
+                img.onload = function () {
+                    if (img.width > 150 || img.height > 150) {
+                        alert('Image dimensions should not exceed 150x150 pixels.');
+                        input.value = '';
+                    }
+                };
+            }
+        }
+    </script>
 </body>
 </html>

@@ -228,6 +228,22 @@ app.get('/generateDefaultImg', (req, res) => {
     res.end(buffer);
 });
 
+app.get('/viewProfile', checkAuthenticated, async (req, res) => {
+    const user = await req.user;
+
+    res.render('viewProfile.ejs', { name: user.name });
+});
+
+app.post('/viewProfile', async (req, res) => {
+    console.log('POST to /viewProfile received')
+    const newName = req.body.name || null;
+    const newEmail = req.body.email || null;
+    const newPassword = req.body.password || null;
+    const newProfilePicture = req.body.profilePicture || null;
+
+    console.log(newName, newEmail, newPassword, newProfilePicture);
+});
+
 app.get('/testRoute', async (req, res) => {
     const messages = await Messages.find().exec();
 
