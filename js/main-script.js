@@ -209,9 +209,6 @@ function mainScript() {
         const sentMsgList = document.createElement('ul');
         const receivedMsgList = document.createElement('ul');
 
-        console.log('sentMsgList', sentMsgList);
-        console.log('receivedMsgList', receivedMsgList);
-
         sentMsgList.id = 'sentMsgList';
         receivedMsgList.id = 'receivedMsgList';
 
@@ -297,14 +294,15 @@ function mainScript() {
             const receivedMsgCollection = document.getElementsByClassName('received-msg');
 
             for (const sentMsg of Array.from(sentMsgCollection)) {
-                console.log('sentMsg', sentMsg);
                 sentMsgList.appendChild(sentMsg);
             }
 
             for (const receivedMsg of Array.from(receivedMsgCollection)) {
-                console.log('receivedMsg', receivedMsg);
                 receivedMsgList.appendChild(receivedMsg);
             }
+
+            console.log('sendMsgList', sentMsgList);
+            console.log('receivedMsgList', receivedMsgList);
 
             messagesList.remove();
             messagesContainer.insertBefore(receivedMsgList, formPreventDefaultPOST);
