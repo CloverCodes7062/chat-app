@@ -358,3 +358,21 @@ li {
     background-color: #fff !important;
     border-radius: 20px !important;
 }
+
+#more-details-container {
+    width: fit-content;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    padding-left: 10px;
+    padding-right: 10px;
+    display: none;
+    pointer-events: none;
+    align-items: center;
+    flex-direction: column;
+    border-radius: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, .2) !important;
+}
+
+#more-details-container p {
+    text-align: center;
+}

@@ -108,7 +108,7 @@ app.post('/', checkAuthenticated, async (req, res) => {
         } else {
             console.log('No Message');
         }
-    
+        
         io.emit('newMessage', message); 
 
         res.status(200).json({ success: true, message: 'Message Saved To DB' });
@@ -138,20 +138,16 @@ app.get('/canDelete', async (req, res) => {
 
     console.log('user.email', user.email);
 
-    Messages.findById(messageId)
-        .then((message) => {
-            console.log('message.sentBy', message.sentBy);
-            if (user.email == message.sentBy) {
-                console.log('canDelete OK return 204');
-                res.status(204).send();
-            } else {
-                res.status(500).send();
-            }
-        })
-        .catch((error) => {
-            console.log('Server Error Checking if canDelete');
-            res.status(500).send();
-        });
+    const messages = await Messages.find().exec();
+
+    for (const msg of messages) {
+        if (msg.sentBy == user.email && msg.id == messageId) {
+            console.log('canDelete OK return 204');
+            res.status(204).send();
+        }
+    }
+
+    res.status(500).send();
 });
 
 app.get('/login', checkNotAuthenticated, (req, res) => {

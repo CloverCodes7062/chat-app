@@ -144,7 +144,17 @@ function mainScript() {
         
         const uint8Array = new Uint8Array(message.profilePicture.data.data);
         const base64String = btoa(String.fromCharCode.apply(null, uint8Array));
-        const moreDetailsP = `<p>Sent by ${message.name} on ${formattedDate}</p>`;
+        const moreDetailsP = `
+        <p>Sent by ${message.name}</p>
+        <p>${message.sentBy}</p>
+        `;
+        const moreDetailsContainer = document.createElement('div');
+        moreDetailsContainer.id = 'more-details-container';
+        moreDetailsContainer.className = 'animate__animated animate__fadeIn'
+        moreDetailsContainer.style.position = 'absolute';
+        moreDetailsContainer.style.zIndex = '1000'
+        moreDetailsContainer.innerHTML = moreDetailsP;
+
         const formattedDateShort = formatDateShort(message.sentOn);
 
         listItem.innerHTML = `
@@ -162,13 +172,33 @@ function mainScript() {
         </li>
         `;
 
+        listItem.append(moreDetailsContainer);
+
+        listItem.addEventListener('mouseenter', () => {
+            moreDetailsContainer.style.display = 'flex';
+            moreDetailsContainer.style.pointerEvents = 'auto';
+        });
+
+        listItem.addEventListener('mouseleave', () => {
+            moreDetailsContainer.style.display = 'none';
+            moreDetailsContainer.style.pointerEvents = 'none';
+        });
+
         listItem.dataset.messageId = message._id;
+
+        console.log('listItemBefore', listItem);
 
         axios.get(`/canDelete?id=${message._id}`)
             .then((response) => {
+                console.log('listItem 204', listItem)
                 if (response.status == 204) {
                     sentMsgList.appendChild(listItem);
                     listItem.className = 'chat-msg sent-msg';
+                    
+                    const computedStyle = getComputedStyle(listItem);
+                    moreDetailsContainer.style.right = `${parseFloat(computedStyle.width) + 50}px`;
+                    moreDetailsContainer.style.backgroundColor = 'rgb(51,10,105)';
+
                     const deleteForm = document.createElement('form');
                     deleteForm.action = `/delete-message?id=${message._id}`;
                     deleteForm.className = 'preventDefault-DELETE'
@@ -192,8 +222,14 @@ function mainScript() {
                 }
             })
             .catch((error) => {
+                console.log('listItem Error', listItem);
                 receivedMsgList.appendChild(listItem);
                 listItem.className = 'chat-msg received-msg';
+
+                const computedStyle = getComputedStyle(listItem);
+                moreDetailsContainer.style.left = `${parseFloat(computedStyle.width) + 50}px`;
+                moreDetailsContainer.style.backgroundColor = 'rgb(155,74,206)';
+
                 console.error('Error Checking canDelete', error);
             })
 
@@ -226,8 +262,18 @@ function mainScript() {
 
             const uint8Array = new Uint8Array(message.sentByPicture.data);
             const base64String = btoa(String.fromCharCode.apply(null, uint8Array));
-            const moreDetailsP = `<p>Sent by ${message.name} on ${formattedDate}</p>`;
+            const moreDetailsP = `
+            <p>Sent by ${message.name}</p>
+            <p>${message.sentBy}</p>
+            `;
             const formattedDateShort = formatDateShort(message.sentOn);
+
+            const moreDetailsContainer = document.createElement('div');
+            moreDetailsContainer.id = 'more-details-container';
+            moreDetailsContainer.className = 'animate__animated animate__fadeIn'
+            moreDetailsContainer.style.position = 'absolute';
+            moreDetailsContainer.style.zIndex = '1000'
+            moreDetailsContainer.innerHTML = moreDetailsP;
 
             listItem.innerHTML = `
             <li class="msg-li">
@@ -244,12 +290,28 @@ function mainScript() {
             </li>
             `;
 
+            listItem.append(moreDetailsContainer);
+            listItem.addEventListener('mouseenter', () => {
+                moreDetailsContainer.style.display = 'flex';
+                moreDetailsContainer.style.pointerEvents = 'auto';
+            });
+
+            listItem.addEventListener('mouseleave', () => {
+                moreDetailsContainer.style.display = 'none';
+                moreDetailsContainer.style.pointerEvents = 'none';
+            });
+
             messagesList.appendChild(listItem);
             listItem.dataset.messageId = message.id;
             axios.get(`/canDelete?id=${message.id}`)
                 .then((response) => {
                     if (response.status == 204) {
                         listItem.className = 'chat-msg sent-msg';
+
+                        const computedStyle = getComputedStyle(listItem);
+                        moreDetailsContainer.style.right = `${parseFloat(computedStyle.width) + 50}px`;
+                        moreDetailsContainer.style.backgroundColor = 'rgb(51,10,105)';
+
                         const deleteForm = document.createElement('form');
                         deleteForm.action = `/delete-message?id=${message.id}`;
                         deleteForm.className = 'preventDefault-DELETE'
@@ -274,6 +336,9 @@ function mainScript() {
                 })
                 .catch((error) => {
                     listItem.className = 'chat-msg received-msg';
+                    const computedStyle = getComputedStyle(listItem);
+                    moreDetailsContainer.style.left = `${parseFloat(computedStyle.width) + 50}px`;
+                    moreDetailsContainer.style.backgroundColor = 'rgb(155,74,206)';
                     console.error('Error Checking canDelete', error);
                 })
         });
