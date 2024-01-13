@@ -134,10 +134,11 @@ function mainScript() {
     
     socket.on('newMessage', async (message) => {
         console.log('New Message Event Triggered');
-        const sentMsgList = document.getElementById('sentMsgList');
-        const receivedMsgList = document.getElementById('receivedMsgList');
 
         const listItem = document.createElement('div');
+        const messagesList = document.getElementById('messagesList');
+        
+        messagesList.appendChild(listItem);
         listItem.style.position = "relative";
 
         const formattedDate = formatDate(message.sentOn);
@@ -192,7 +193,6 @@ function mainScript() {
             .then((response) => {
                 console.log('listItem 204', listItem)
                 if (response.status == 204) {
-                    sentMsgList.appendChild(listItem);
                     listItem.className = 'chat-msg sent-msg';
                     
                     const computedStyle = getComputedStyle(listItem);
@@ -223,7 +223,6 @@ function mainScript() {
             })
             .catch((error) => {
                 console.log('listItem Error', listItem);
-                receivedMsgList.appendChild(listItem);
                 listItem.className = 'chat-msg received-msg';
 
                 const computedStyle = getComputedStyle(listItem);
@@ -232,8 +231,6 @@ function mainScript() {
 
                 console.error('Error Checking canDelete', error);
             })
-
-        listItem.appendChild(deleteForm);
     });
     
     socket.on('resetChatMessages', async (messages) => {
@@ -241,15 +238,6 @@ function mainScript() {
 
         const messagesContainer = document.getElementById('messages-container');
         const formPreventDefaultPOST = document.getElementById('preventDefault-POST');
-
-        const sentMsgList = document.createElement('ul');
-        const receivedMsgList = document.createElement('ul');
-
-        sentMsgList.id = 'sentMsgList';
-        receivedMsgList.id = 'receivedMsgList';
-
-        sentMsgList.innerHTML = '';
-        receivedMsgList.innerHTML = '';
 
         const messagesList = document.createElement('ul');
         messagesList.id = 'messagesList';
@@ -353,28 +341,6 @@ function mainScript() {
         messagesContainer.insertBefore(messagesList, formPreventDefaultPOST);
 
         console.log('messagesList', messagesList);
-
-        setTimeout(() => {
-            const sentMsgCollection = document.getElementsByClassName('sent-msg');
-            const receivedMsgCollection = document.getElementsByClassName('received-msg');
-
-            for (const sentMsg of Array.from(sentMsgCollection)) {
-                sentMsgList.appendChild(sentMsg);
-            }
-
-            for (const receivedMsg of Array.from(receivedMsgCollection)) {
-                receivedMsgList.appendChild(receivedMsg);
-            }
-
-            console.log('sendMsgList', sentMsgList);
-            console.log('receivedMsgList', receivedMsgList);
-
-            messagesList.remove();
-            messagesContainer.insertBefore(receivedMsgList, formPreventDefaultPOST);
-            messagesContainer.insertBefore(sentMsgList, formPreventDefaultPOST);
-
-        }, 500);
-
     });
 
     socket.on('receiveStopRemoteAudio', (audioIdToStop) => {
