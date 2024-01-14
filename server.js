@@ -42,19 +42,26 @@ initializePassport(
 
 mongoose.connect(process.env.MONGODB_URI);
 
-const userSchema = new mongoose.Schema({
-    name: String,
-    email: String,
-    password: String,
-    profilePicture: { data: Buffer, contentType: String },
-});
-
 const messageSchema = new mongoose.Schema({
     sentOn: Date,
     sentBy: String,
     name: String,
     message: String,
     profilePicture: { data: Buffer, contentType: String },
+});
+
+const userSchema = new mongoose.Schema({
+    name: String,
+    email: String,
+    password: String,
+    profilePicture: { data: Buffer, contentType: String },
+    directMessages: [
+        {
+            email : String,
+            receivedMessages: [messageSchema],
+            sentMessages: [messageSchema],
+        }
+    ]
 });
 
 const User = mongoose.model('User', userSchema);
@@ -115,6 +122,81 @@ app.post('/', checkAuthenticated, async (req, res) => {
     } catch (error) {
         res.status(500).json({ success: false, message: 'Server Error Saving Message to DB' });
     }
+});
+
+app.post('/sendDirectMessage', async (req, res) => {
+    console.log("/sendDirectMessage POST received");
+
+    try {
+        const reqMessage = req.body.message;
+        const reqSendingTo = req.query.sendingTo;
+
+        const user = await req.user;
+        const mongooseUser = await User.findOne({ email: user.email });
+
+        const message = new Messages({
+            sentOn: new Date(),
+            sentBy: user.email,
+            name: user.name,
+            message: reqMessage,
+            profilePicture: user.profilePicture,
+        });
+
+        for (const directMessageUser of mongooseUser.directMessages) {
+            if (directMessageUser.email == reqSendingTo) {
+
+                directMessageUser.sentMessages.push(message);
+                console.log('directMessageUser', directMessageUser);
+
+                await mongooseUser.save();
+
+                const sendingToUser = await User.findOne({ email: reqSendingTo });
+
+                for (const sendingDirectMessageUser of sendingToUser.directMessages) {
+                    if (sendingDirectMessageUser.email == user.email) {
+                        sendingDirectMessageUser.receivedMessages.push(message);
+                        console.log('sendingDirectMessageUser', sendingDirectMessageUser);
+
+                        await sendingToUser.save();
+                    }
+                }
+            }
+        }
+
+        res.status(200).json({ success: true, message: 'Successfully sent message to recipent' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Error sending message to recipent' });
+    }
+});
+
+app.get('/availableUsers', async (req, res) => {
+    const user = await req.user;
+
+    const users = await User.find().exec();
+    const userEmailList = [];
+
+    for (const currentUser of users) {
+        if (currentUser.email != user.email) {
+            userEmailList.push({
+                profilePicture: currentUser.profilePicture,
+                name: currentUser.name,
+                email: currentUser.email,
+                receivedMessages: currentUser.directMessages
+                    .filter(sender => sender.email == user.email)
+                    .map(sender => sender.receivedMessages)
+                    .flat(),
+                sentMessages: currentUser.directMessages
+                    .filter(sender => sender.email == user.email)
+                    .map(sender => sender.sentMessages)
+                    .flat(),
+            });    
+        }
+        
+    }
+
+    console.log(userEmailList);
+
+    res.send(JSON.stringify({ data: userEmailList }));
 });
 
 app.delete('/delete-message', checkAuthenticated, async (req, res) => {
@@ -323,14 +405,12 @@ app.post('/viewProfile', upload.single('profileImage'), async (req, res) => {
 });
 
 app.get('/testRoute', async (req, res) => {
-    const messages = await Messages.find().exec();
+    console.log('/testroute GET Received');
 
-    for (const message of messages) {
-        const profilePicture = (await User.findOne({ email: message.sentBy })).profilePicture;
-        message.profilePicture = profilePicture;
-        console.log('message', message.profilePicture);
-        await message.save().then(console.log('Message in db updated'));
-    }
+    const user = await req.user;
+
+    const users = await User.find().exec();
+    const mongooseUser = await User.findOne({ email: user.email });
 });
 
 function checkAuthenticated(req, res, next) {

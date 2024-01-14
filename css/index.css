@@ -376,3 +376,8 @@ li {
 #more-details-container p {
     text-align: center;
 }
+
+.showDirectMessageContainer {
+    display: flex !important;
+    pointer-events: auto !important;
+}

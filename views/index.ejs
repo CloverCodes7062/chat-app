@@ -21,7 +21,7 @@
             <div class="menu-icon">&#9776;</div>
             <ul class="nav-list">
                 <li><a href="/viewProfile">View Profile</a></li>
-                <li><a href="#">Leave Chatroom</a></li>
+                <li><a id = "openDirectMessagesContainer" href="#" >Send a Direct Message</a></li>
                 <li><a href="#">Subscriptions</a></li>
                 <li><a href="#">Library</a></li>
                 <li><a href="#">History</a></li>
@@ -59,6 +59,135 @@
         </form>
     </main>
     <section class="right-section">
+        <div id="directMessageContainer" style="display: none; pointer-events: none; position: fixed; top: 2vh; right: 6vw; background-color: #fff; border-radius: 20px; box-shadow: 0 0 10px rgba(0, 0, 0, .2);"></div>
+        <script type="text/javascript">
+            document.addEventListener('DOMContentLoaded', () => {
+                const directMessageContainer = document.getElementById('directMessageContainer');
+                directMessageContainer.style.padding = '15px';
+
+                const openDirectMessagesContainer = document.getElementById('openDirectMessagesContainer');
+                openDirectMessagesContainer.addEventListener('click', (e) => {
+                    e.preventDefault();
+
+                    const navList = document.querySelector('.nav-list');
+                    navList.classList.toggle('show');
+                    directMessageContainer.classList.toggle('showDirectMessageContainer');
+                });
+
+                const ul = document.createElement('ul');
+                ul.style.margin = '0'
+                ul.style.padding = '0';
+                ul.style.listStyleType = 'none';
+                ul.style.display = 'flex';
+                ul.style.flexDirection = 'column';
+                ul.style.alignItems = 'center';
+                ul.style.justifyContent = 'center';
+                ul.style.gap = '15px';
+
+                axios.get('/availableUsers')
+                    .then((response) => {
+                        const availableUsers = response.data.data;
+                        availableUsers.forEach((user) => {
+
+                            const uint8Array = new Uint8Array(user.profilePicture.data.data);
+                            const base64StringProfilePicture = btoa(String.fromCharCode.apply(null, uint8Array));
+                            console.log(base64StringProfilePicture);
+                            
+                            const li = document.createElement('li');
+                            li.innerHTML = 
+                            `<p 
+                            style="color: #333; text-align: 
+                            center; font-weight: bold;">
+                            ${user.email}
+                            </p>`
+
+                            const pInsideLi = li.querySelector('p');
+
+                            pInsideLi.addEventListener('click', () => {
+                                const oldSendDirectMessageContainer = document.getElementById('sendDirectMessageContainer');
+
+                                if (oldSendDirectMessageContainer) {
+                                    oldSendDirectMessageContainer.remove();
+                                }
+
+                                const sendDirectMessageContainer = document.createElement('div');
+                                sendDirectMessageContainer.id = 'sendDirectMessageContainer';
+                                sendDirectMessageContainer.style.padding = '20px';
+                                sendDirectMessageContainer.style.backgroundColor = '#fff';
+                                sendDirectMessageContainer.style.borderRadius = '20px';
+                                sendDirectMessageContainer.style.position = 'fixed';
+                                sendDirectMessageContainer.style.top = '2vh';
+                                sendDirectMessageContainer.style.right = '24vw';
+                                sendDirectMessageContainer.style.height = '54vh'
+                                sendDirectMessageContainer.style.widows = '600px';
+
+                                const receivedMessagesUl = document.createElement('ul');
+                                receivedMessagesUl.style.margin = '0';
+                                receivedMessagesUl.style.padding = '0';
+                                receivedMessagesUl.style.listStyleType = 'none';
+                                receivedMessagesUl.style.display = 'flex';
+                                receivedMessagesUl.style.flexDirection = 'column';
+                                receivedMessagesUl.style.alignItems = 'center';
+                                receivedMessagesUl.style.justifyContent = 'center';
+                                receivedMessagesUl.style.gap = '15px';
+
+                                const sentMessagesUl = document.createElement('ul');
+                                sentMessagesUl.style.margin = '0';
+                                sentMessagesUl.style.padding = '0';
+                                sentMessagesUl.style.listStyleType = 'none';
+                                sentMessagesUl.style.display = 'flex';
+                                sentMessagesUl.style.flexDirection = 'column';
+                                sentMessagesUl.style.alignItems = 'center';
+                                sentMessagesUl.style.justifyContent = 'center';
+                                sentMessagesUl.style.gap = '15px';
+
+                                user.receivedMessages.forEach((receivedMessage) => {
+                                    const receivedMessageLi = document.createElement('li');
+
+                                    receivedMessageLi.innerHTML = `<p style="color: #333; font-weight: bold;">Sent From You ${receivedMessage.message}</p>`;
+
+                                    receivedMessagesUl.appendChild(receivedMessageLi);
+                                });
+
+                                user.sentMessages.forEach((sentMessage) => {
+                                    const sentMessageLi = document.createElement('li');
+
+                                    sentMessageLi.innerHTML = `<p style="color: #333; font-weight: bold;">Sent To You ${sentMessage.message}</p>`;
+
+                                    sentMessagesUl.appendChild(sentMessageLi);
+                                });
+
+                                sendDirectMessageContainer.innerHTML =
+                                `
+                                <img
+                                    src="data:${user.profilePicture.contentType};base64,${base64StringProfilePicture}" 
+                                    width="50" 
+                                    height="50" 
+                                    style="border-radius: 50%; pointer-events: none;"
+                                >
+                                <p style="text-align: center; color: #333; font-weight: bold;">${user.name}</p>
+                                <form action="/sendDirectMessage?sendingTo=${user.email}" method="POST" style="display: flex; flex-direction: column; gap: 10px;">
+                                        <div>
+                                            <input name="message">
+                                            <button type="submit">Send Msg</button>
+                                        </div>
+                                </form>`;
+
+                                const formInsideSendDirectContainer = sendDirectMessageContainer.querySelector('form');
+
+                                sendDirectMessageContainer.insertBefore(receivedMessagesUl, formInsideSendDirectContainer);
+                                sendDirectMessageContainer.insertBefore(sentMessagesUl, formInsideSendDirectContainer);
+
+                                directMessageContainer.appendChild(sendDirectMessageContainer);
+                            });
+                            ul.append(li);
+                        });
+                    })
+                    .catch((err) => console.log('Error GET /availableUsers', err));
+
+                directMessageContainer.appendChild(ul);
+            });
+        </script>
         <div id="localAudioContainer" style="display: none; pointer-events: none; position: absolute;">
             <img 
                 id="localAudioVisualizer" 
