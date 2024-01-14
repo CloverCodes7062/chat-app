@@ -91,7 +91,6 @@
 
                             const uint8Array = new Uint8Array(user.profilePicture.data.data);
                             const base64StringProfilePicture = btoa(String.fromCharCode.apply(null, uint8Array));
-                            console.log(base64StringProfilePicture);
                             
                             const li = document.createElement('li');
                             li.innerHTML = 
@@ -120,41 +119,40 @@
                                 sendDirectMessageContainer.style.right = '24vw';
                                 sendDirectMessageContainer.style.height = '54vh'
                                 sendDirectMessageContainer.style.widows = '600px';
+                                sendDirectMessageContainer.style.overflowY = 'auto';
 
-                                const receivedMessagesUl = document.createElement('ul');
-                                receivedMessagesUl.style.margin = '0';
-                                receivedMessagesUl.style.padding = '0';
-                                receivedMessagesUl.style.listStyleType = 'none';
-                                receivedMessagesUl.style.display = 'flex';
-                                receivedMessagesUl.style.flexDirection = 'column';
-                                receivedMessagesUl.style.alignItems = 'center';
-                                receivedMessagesUl.style.justifyContent = 'center';
-                                receivedMessagesUl.style.gap = '15px';
+                                sendDirectMessageContainer.addEventListener('mouseleave', () => {
+                                    sendDirectMessageContainer.className = "animate__animated animate__fadeOut";
 
-                                const sentMessagesUl = document.createElement('ul');
-                                sentMessagesUl.style.margin = '0';
-                                sentMessagesUl.style.padding = '0';
-                                sentMessagesUl.style.listStyleType = 'none';
-                                sentMessagesUl.style.display = 'flex';
-                                sentMessagesUl.style.flexDirection = 'column';
-                                sentMessagesUl.style.alignItems = 'center';
-                                sentMessagesUl.style.justifyContent = 'center';
-                                sentMessagesUl.style.gap = '15px';
+                                    setTimeout(() => {
+                                        sendDirectMessageContainer.remove();
+                                    }, 600);
+                                });
+
+                                const allMessagesUl = document.createElement('ul');
+                                allMessagesUl.style.margin = '0';
+                                allMessagesUl.style.padding = '0';
+                                allMessagesUl.style.listStyleType = 'none';
+                                allMessagesUl.style.display = 'flex';
+                                allMessagesUl.style.flexDirection = 'column';
+                                allMessagesUl.style.alignItems = 'center';
+                                allMessagesUl.style.justifyContent = 'center';
+                                allMessagesUl.style.gap = '15px';
 
                                 user.receivedMessages.forEach((receivedMessage) => {
                                     const receivedMessageLi = document.createElement('li');
 
-                                    receivedMessageLi.innerHTML = `<p style="color: #333; font-weight: bold;">Sent From You ${receivedMessage.message}</p>`;
-
-                                    receivedMessagesUl.appendChild(receivedMessageLi);
+                                    receivedMessageLi.innerHTML = `<p style="color: #333; font-weight: bold;">Sent From You ${receivedMessage.message} | ${receivedMessage.sentOn}</p>`;
+                                    receivedMessageLi.className = 'sent-direct-message';
+                                    allMessagesUl.appendChild(receivedMessageLi);
                                 });
 
                                 user.sentMessages.forEach((sentMessage) => {
                                     const sentMessageLi = document.createElement('li');
 
-                                    sentMessageLi.innerHTML = `<p style="color: #333; font-weight: bold;">Sent To You ${sentMessage.message}</p>`;
-
-                                    sentMessagesUl.appendChild(sentMessageLi);
+                                    sentMessageLi.innerHTML = `<p style="color: #333; font-weight: bold;">Sent To You ${sentMessage.message} | ${sentMessage.sentOn}</p>`;
+                                    sentMessageLi.className = 'received-direct-message';
+                                    allMessagesUl.appendChild(sentMessageLi);
                                 });
 
                                 sendDirectMessageContainer.innerHTML =
@@ -173,10 +171,32 @@
                                         </div>
                                 </form>`;
 
+                                const buttonInsideForm = sendDirectMessageContainer.querySelector('button');
+                                const inputInsideForm = sendDirectMessageContainer.querySelector('input');
+
+                                console.log(inputInsideForm.value);
+
+                                buttonInsideForm.addEventListener('click', (e) => {
+                                    e.preventDefault();
+
+                                    axios.post(`/sendDirectMessage?sendingTo=${user.email}`, { message: inputInsideForm.value })
+                                        .then((reponse) => {
+                                            console.log(reponse);
+                                        });
+
+                                    const receivedMessageClientLi = document.createElement('li');
+                                    receivedMessageClientLi.innerHTML = `<p style="color: #333; font-weight: bold;">Sent From You ${inputInsideForm.value} | ${new Date()}</p>`;
+                                    receivedMessageClientLi.className = 'received-direct-message';
+
+                                    allMessagesUl.appendChild(receivedMessageClientLi);
+                                });
+
                                 const formInsideSendDirectContainer = sendDirectMessageContainer.querySelector('form');
 
-                                sendDirectMessageContainer.insertBefore(receivedMessagesUl, formInsideSendDirectContainer);
-                                sendDirectMessageContainer.insertBefore(sentMessagesUl, formInsideSendDirectContainer);
+
+                                console.log(allMessagesUl);
+
+                                sendDirectMessageContainer.insertBefore(allMessagesUl, formInsideSendDirectContainer);
 
                                 directMessageContainer.appendChild(sendDirectMessageContainer);
                             });
