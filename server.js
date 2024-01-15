@@ -128,7 +128,7 @@ app.post('/sendDirectMessage', async (req, res) => {
     console.log("/sendDirectMessage POST received");
 
     try {
-        const reqMessage = req.body.message;
+        const reqMessage = req.body.message;``
         const reqSendingTo = req.query.sendingTo;
 
         const user = await req.user;
@@ -146,7 +146,6 @@ app.post('/sendDirectMessage', async (req, res) => {
             if (directMessageUser.email == reqSendingTo) {
 
                 directMessageUser.sentMessages.push(message);
-                console.log('directMessageUser', directMessageUser);
 
                 await mongooseUser.save();
 
@@ -155,15 +154,13 @@ app.post('/sendDirectMessage', async (req, res) => {
                 for (const sendingDirectMessageUser of sendingToUser.directMessages) {
                     if (sendingDirectMessageUser.email == user.email) {
                         sendingDirectMessageUser.receivedMessages.push(message);
-                        console.log('sendingDirectMessageUser', sendingDirectMessageUser);
 
                         await sendingToUser.save();
                     }
                 }
             }
         }
-
-        res.status(200).json({ success: true, message: 'Successfully sent message to recipent' });
+        res.send(JSON.stringify(message));
     } catch (error) {
         res.status(500).json({ success: false, message: 'Error sending message to recipent' });
     }
@@ -194,9 +191,49 @@ app.get('/availableUsers', async (req, res) => {
         
     }
 
-    console.log(userEmailList);
-
     res.send(JSON.stringify({ data: userEmailList }));
+});
+
+app.delete('/deleteDirectMessage', checkAuthenticated, async (req, res) => {
+    console.log('/deleteDirectMessage DELETE CALLED');
+    const user = await req.user;
+
+    const sentFrom = user.email;
+    const sentTo = req.query.sentTo;
+
+    const messageId = req.query.id;
+
+    try {
+
+        await User.updateOne({
+            'directMessages.email': sentTo,
+            'directMessages.sentMessages._id': messageId,
+    
+        },
+        {
+            $pull: {
+                'directMessages.$.sentMessages': { _id: messageId },
+            },
+        },
+        )
+
+        await User.updateOne({
+            'directMessages.email': sentFrom,
+            'directMessages.receivedMessages._id': messageId,
+    
+        },
+        {
+            $pull: {
+                'directMessages.$.receivedMessages': { _id: messageId },
+            },
+        },
+        )
+
+        res.status(204).send();
+    } catch(error) {
+        console.error('Error Deleting Message (/delete-message)', error);
+        res.status(500).send();
+    }
 });
 
 app.delete('/delete-message', checkAuthenticated, async (req, res) => {
@@ -230,6 +267,19 @@ app.get('/canDelete', async (req, res) => {
     }
 
     res.status(500).send();
+});
+
+app.post('/canDeleteDirectMessage', async (req, res) => {
+    const user = await req.user;
+    const messageSentBy = req.body.sentBy;
+
+    if (user.email == messageSentBy) {
+        res.status(204).send();
+    }
+
+    res.status(500).send();
+
+    //Can probably delete
 });
 
 app.get('/login', checkNotAuthenticated, (req, res) => {

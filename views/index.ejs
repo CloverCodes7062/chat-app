@@ -62,6 +62,21 @@
         <div id="directMessageContainer" style="display: none; pointer-events: none; position: fixed; top: 2vh; right: 6vw; background-color: #fff; border-radius: 20px; box-shadow: 0 0 10px rgba(0, 0, 0, .2);"></div>
         <script type="text/javascript">
             document.addEventListener('DOMContentLoaded', () => {
+                function formatDateShort(date) {
+                    const options = {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: 'numeric',
+                        hour: 'numeric',
+                        minute: 'numeric',
+                        second: 'numeric',
+                        hour12: true
+                    }
+
+                    const formattedDateShort = new Date(date).toLocaleString(undefined, options);
+                    return formattedDateShort;
+                }
+
                 const directMessageContainer = document.getElementById('directMessageContainer');
                 directMessageContainer.style.padding = '15px';
 
@@ -140,10 +155,37 @@
                                 allMessagesUl.style.gap = '15px';
 
                                 user.receivedMessages.forEach((receivedMessage) => {
-                                    const receivedMessageLi = document.createElement('li');
+                                    console.log(user.email);
+                                    console.log('receivedMessage YOU SHOULD BE ABLE TO DEL IT', receivedMessage);
 
-                                    receivedMessageLi.innerHTML = `<p style="color: #333; font-weight: bold;">Sent From You ${receivedMessage.message} | ${receivedMessage.sentOn}</p>`;
+                                    const receivedMessageLi = document.createElement('li');
+                                    console.log(receivedMessage);
+                                    receivedMessageLi.innerHTML = `<p style="color: #333; font-weight: bold;">Sent From You ${receivedMessage.message} | ${formatDateShort(receivedMessage.sentOn)}</p>`;
                                     receivedMessageLi.className = 'sent-direct-message';
+
+                                    const deleteForm = document.createElement('form');
+                                    deleteForm.action = `/deleteDirectMessage?id=${receivedMessage._id}&sentTo=${user.email}&_method=DELETE`;
+                                    deleteForm.method = 'POST';
+
+                                    const deleteBtn = document.createElement('button');
+                                    deleteBtn.textContent = 'Delete';
+                                    deleteBtn.addEventListener('click', (e) => {
+                                                e.preventDefault();
+
+                                                axios.delete(`/deleteDirectMessage?id=${receivedMessage._id}&sentTo=${user.email}&_method=DELETE`)
+                                                    .then(() => {
+                                                        console.log('DELETED DIRECT MSG');
+                                                    })
+                                                    .catch((error) => {
+                                                        console.error(error);
+                                                    })
+                                                
+                                                receivedMessageLi.remove();
+                                            });
+                                    deleteForm.appendChild(deleteBtn);
+
+                                    receivedMessageLi.appendChild(deleteForm);
+
                                     allMessagesUl.appendChild(receivedMessageLi);
                                 });
 
@@ -152,6 +194,7 @@
 
                                     sentMessageLi.innerHTML = `<p style="color: #333; font-weight: bold;">Sent To You ${sentMessage.message} | ${sentMessage.sentOn}</p>`;
                                     sentMessageLi.className = 'received-direct-message';
+
                                     allMessagesUl.appendChild(sentMessageLi);
                                 });
 
@@ -174,21 +217,53 @@
                                 const buttonInsideForm = sendDirectMessageContainer.querySelector('button');
                                 const inputInsideForm = sendDirectMessageContainer.querySelector('input');
 
-                                console.log(inputInsideForm.value);
-
                                 buttonInsideForm.addEventListener('click', (e) => {
                                     e.preventDefault();
 
+                                    console.log('inputInsideForm.value', inputInsideForm.value);
+
                                     axios.post(`/sendDirectMessage?sendingTo=${user.email}`, { message: inputInsideForm.value })
-                                        .then((reponse) => {
-                                            console.log(reponse);
-                                        });
+                                        .then((res) => {
+                                            console.log(res.data);
+                                            console.log(res.data.message);
+                                            console.log(res.data._id)
 
-                                    const receivedMessageClientLi = document.createElement('li');
-                                    receivedMessageClientLi.innerHTML = `<p style="color: #333; font-weight: bold;">Sent From You ${inputInsideForm.value} | ${new Date()}</p>`;
-                                    receivedMessageClientLi.className = 'received-direct-message';
+                                            const resMessage = res.data.message;
+                                            const resMessageId = res.data._id;
 
-                                    allMessagesUl.appendChild(receivedMessageClientLi);
+                                            const receivedMessageClientLi = document.createElement('li');
+                                            receivedMessageClientLi.innerHTML = `<p style="color: #333; font-weight: bold;">Sent From You ${resMessage} | ${formatDateShort(new Date())}</p>`;
+                                            receivedMessageClientLi.className = 'received-direct-message';
+                                            inputInsideForm.value = '';
+
+                                            const deleteForm = document.createElement('form');
+                                            deleteForm.action = `/deleteDirectMessage?id=${resMessageId}&sentTo=${user.email}&_method=DELETE`;
+                                            deleteForm.method = 'POST';
+
+                                            const deleteBtn = document.createElement('button');
+                                            deleteForm.appendChild(deleteBtn);
+
+                                            deleteBtn.textContent = 'Delete';
+                                            deleteBtn.addEventListener('click', (e) => {
+                                                e.preventDefault();
+
+                                                axios.delete(`/deleteDirectMessage?id=${resMessageId}&sentTo=${user.email}&_method=DELETE`)
+                                                    .then(() => {
+                                                        console.log('DELETED DIRECT MSG');
+                                                    })
+                                                    .catch((error) => {
+                                                        console.error(error);
+                                                    })
+                                                
+                                                receivedMessageClientLi.remove();
+                                            });
+
+                                            receivedMessageClientLi.appendChild(deleteForm);
+                                            allMessagesUl.appendChild(receivedMessageClientLi);
+                                        })
+                                        .catch((error) => {
+                                            console.log(error);
+                                        })
                                 });
 
                                 const formInsideSendDirectContainer = sendDirectMessageContainer.querySelector('form');
