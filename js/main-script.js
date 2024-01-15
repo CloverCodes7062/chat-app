@@ -432,6 +432,19 @@ function mainScript() {
                     console.log(receivedDirectMessageSentBy);
                     console.log('Received a direct message!');
                     currentlyAvailableUsers[receivedDirectMessageSentBy].sentMessages.push(receivedDirectMessage);
+
+                    const sendDirectMessageContainer = document.getElementById('sendDirectMessageContainer');
+
+                    if (sendDirectMessageContainer) {
+                        console.log('sendDirectMessageContainer', sendDirectMessageContainer);
+                        const DmUl = sendDirectMessageContainer.querySelector('ul');
+                        const sentMessageLi = document.createElement('li');
+
+                        sentMessageLi.innerHTML = `<p style="color: #333; font-weight: bold;">Sent To You ${receivedDirectMessage.message} | ${formatDateShort(receivedDirectMessage.sentOn)}</p>`;
+                        sentMessageLi.className = 'received-direct-message';
+
+                        DmUl.appendChild(sentMessageLi);
+                    }
                 }
             })
             .catch((error) => {
