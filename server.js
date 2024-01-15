@@ -160,10 +160,17 @@ app.post('/sendDirectMessage', async (req, res) => {
                 }
             }
         }
+        io.emit('receivedNewDirectMessage', { sentTo: reqSendingTo, message: message });
         res.send(JSON.stringify(message));
     } catch (error) {
         res.status(500).json({ success: false, message: 'Error sending message to recipent' });
     }
+});
+
+app.get('/currentUserEmail', checkAuthenticated, async (req, res) => {
+    const user = await req.user;
+
+    res.send(JSON.stringify(user.email));
 });
 
 app.get('/availableUsers', async (req, res) => {

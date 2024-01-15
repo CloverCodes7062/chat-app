@@ -77,6 +77,8 @@
                     return formattedDateShort;
                 }
 
+                window.currentlyAvailableUsers = {};
+
                 const directMessageContainer = document.getElementById('directMessageContainer');
                 directMessageContainer.style.padding = '15px';
 
@@ -103,6 +105,8 @@
                     .then((response) => {
                         const availableUsers = response.data.data;
                         availableUsers.forEach((user) => {
+
+                            currentlyAvailableUsers[user.email] = user;
 
                             const uint8Array = new Uint8Array(user.profilePicture.data.data);
                             const base64StringProfilePicture = btoa(String.fromCharCode.apply(null, uint8Array));
@@ -154,9 +158,7 @@
                                 allMessagesUl.style.justifyContent = 'center';
                                 allMessagesUl.style.gap = '15px';
 
-                                user.receivedMessages.forEach((receivedMessage) => {
-                                    console.log(user.email);
-                                    console.log('receivedMessage YOU SHOULD BE ABLE TO DEL IT', receivedMessage);
+                                currentlyAvailableUsers[user.email].receivedMessages.forEach((receivedMessage) => {
 
                                     const receivedMessageLi = document.createElement('li');
                                     console.log(receivedMessage);
@@ -189,7 +191,7 @@
                                     allMessagesUl.appendChild(receivedMessageLi);
                                 });
 
-                                user.sentMessages.forEach((sentMessage) => {
+                                currentlyAvailableUsers[user.email].sentMessages.forEach((sentMessage) => {
                                     const sentMessageLi = document.createElement('li');
 
                                     sentMessageLi.innerHTML = `<p style="color: #333; font-weight: bold;">Sent To You ${sentMessage.message} | ${sentMessage.sentOn}</p>`;
@@ -220,14 +222,10 @@
                                 buttonInsideForm.addEventListener('click', (e) => {
                                     e.preventDefault();
 
-                                    console.log('inputInsideForm.value', inputInsideForm.value);
-
                                     axios.post(`/sendDirectMessage?sendingTo=${user.email}`, { message: inputInsideForm.value })
                                         .then((res) => {
-                                            console.log(res.data);
-                                            console.log(res.data.message);
-                                            console.log(res.data._id)
-
+                                            console.log('res.data', res.data);
+                                            currentlyAvailableUsers[user.email].receivedMessages.push(res.data);
                                             const resMessage = res.data.message;
                                             const resMessageId = res.data._id;
 
@@ -277,6 +275,7 @@
                             });
                             ul.append(li);
                         });
+
                     })
                     .catch((err) => console.log('Error GET /availableUsers', err));
 

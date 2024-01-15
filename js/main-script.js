@@ -419,6 +419,25 @@ function mainScript() {
             console.log(`receivedPeerId ${receivedPeerId} not in remotePeerIds ${remotePeerIds}`);
         }
     });
+
+    socket.on('receivedNewDirectMessage', (receivedNewDirectMessageObj) => {
+        const sentTo = receivedNewDirectMessageObj.sentTo;
+        const receivedDirectMessage = receivedNewDirectMessageObj.message;
+        console.log('receivedDirectMessage', receivedDirectMessage);
+        console.log('currentlyAvailableUsers', currentlyAvailableUsers);
+        axios.get('/currentUserEmail')
+            .then((response) => {
+                if (response.data == sentTo) {
+                    const receivedDirectMessageSentBy = receivedDirectMessage.sentBy;
+                    console.log(receivedDirectMessageSentBy);
+                    console.log('Received a direct message!');
+                    currentlyAvailableUsers[receivedDirectMessageSentBy].sentMessages.push(receivedDirectMessage);
+                }
+            })
+            .catch((error) => {
+                console.log("error checking current user's email", error);
+            })
+    });
     
     socket.emit('getNewMessages');
     
