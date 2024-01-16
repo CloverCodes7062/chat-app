@@ -140,13 +140,13 @@
                                 sendDirectMessageContainer.style.widows = '600px';
                                 sendDirectMessageContainer.style.overflowY = 'auto';
 
-                                sendDirectMessageContainer.addEventListener('mouseleave', () => {
+                                /* sendDirectMessageContainer.addEventListener('mouseleave', () => {
                                     sendDirectMessageContainer.className = "animate__animated animate__fadeOut";
 
                                     setTimeout(() => {
                                         sendDirectMessageContainer.remove();
                                     }, 600);
-                                });
+                                }); Reenable later! */
 
                                 const allMessagesUl = document.createElement('ul');
                                 allMessagesUl.style.margin = '0';
@@ -159,11 +159,10 @@
                                 allMessagesUl.style.gap = '15px';
 
                                 currentlyAvailableUsers[user.email].receivedMessages.forEach((receivedMessage) => {
-
                                     const receivedMessageLi = document.createElement('li');
                                     
                                     receivedMessageLi.dataset.messageId = receivedMessage._id;
-                                    receivedMessageLi.innerHTML = `<p style="color: #333; font-weight: bold;">Sent From You ${receivedMessage.message} | ${formatDateShort(receivedMessage.sentOn)}</p>`;
+                                    receivedMessageLi.innerHTML = `<p style="color: #333; font-weight: bold;">Sent From You ${receivedMessage.message} | ${formatDateShort(new Date(receivedMessage.sentOn))}</p>`;
                                     receivedMessageLi.className = 'sent-direct-message';
 
                                     const deleteForm = document.createElement('form');
@@ -199,7 +198,7 @@
                                     const sentMessageLi = document.createElement('li');
 
                                     sentMessageLi.dataset.messageId = sentMessage._id;
-                                    sentMessageLi.innerHTML = `<p style="color: #333; font-weight: bold;">Sent To You ${sentMessage.message} | ${sentMessage.sentOn}</p>`;
+                                    sentMessageLi.innerHTML = `<p style="color: #333; font-weight: bold;">Sent To You ${sentMessage.message} | ${formatDateShort(new Date(sentMessage.sentOn))}</p>`;
                                     sentMessageLi.className = 'received-direct-message';
 
                                     allMessagesUl.appendChild(sentMessageLi);
