@@ -437,12 +437,23 @@ function mainScript() {
                     const sendDirectMessageContainer = document.getElementById('sendDirectMessageContainer');
 
                     if (sendDirectMessageContainer) {
+                        const uint8ArrayReceivedDmMsg = new Uint8Array(receivedDirectMessage.profilePicture.data.data);
+                        const base64StringReceivedDmMsg = btoa(String.fromCharCode.apply(null, uint8ArrayReceivedDmMsg));
+
                         console.log('sendDirectMessageContainer', sendDirectMessageContainer);
                         const DmUl = sendDirectMessageContainer.querySelector('ul');
                         const sentMessageLi = document.createElement('li');
 
                         sentMessageLi.dataset.messageId = receivedDirectMessage._id;
-                        sentMessageLi.innerHTML = `<p style="color: #333; font-weight: bold;">Sent To You ${receivedDirectMessage.message} | ${formatDateShort(receivedDirectMessage.sentOn)}</p>`;
+                        sentMessageLi.innerHTML = 
+                        `
+                        <img
+                        src="data:${receivedDirectMessage.profilePicture.contentType};base64,${base64StringReceivedDmMsg}" 
+                        width="50" 
+                        height="50" 
+                        style="border-radius: 50%; pointer-events: none;"
+                        >
+                        <p style="color: #333; font-weight: bold;">Sent To You ${receivedDirectMessage.message} | ${formatDateShort(new Date(receivedDirectMessage.sentOn))}</p>`;
                         sentMessageLi.className = 'received-direct-message';
 
                         DmUl.appendChild(sentMessageLi);
