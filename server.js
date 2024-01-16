@@ -236,6 +236,8 @@ app.delete('/deleteDirectMessage', checkAuthenticated, async (req, res) => {
         },
         )
 
+        io.emit('deleteReceivedDirectMessage', ({ sentFrom: sentFrom, messageId: messageId}));
+
         res.status(204).send();
     } catch(error) {
         console.error('Error Deleting Message (/delete-message)', error);

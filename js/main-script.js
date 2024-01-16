@@ -431,6 +431,7 @@ function mainScript() {
                     const receivedDirectMessageSentBy = receivedDirectMessage.sentBy;
                     console.log(receivedDirectMessageSentBy);
                     console.log('Received a direct message!');
+                    console.log('currentlyAvailableUsers[receivedDirectMessageSentBy]', currentlyAvailableUsers[receivedDirectMessageSentBy]);
                     currentlyAvailableUsers[receivedDirectMessageSentBy].sentMessages.push(receivedDirectMessage);
 
                     const sendDirectMessageContainer = document.getElementById('sendDirectMessageContainer');
@@ -440,6 +441,7 @@ function mainScript() {
                         const DmUl = sendDirectMessageContainer.querySelector('ul');
                         const sentMessageLi = document.createElement('li');
 
+                        sentMessageLi.dataset.messageId = receivedDirectMessage._id;
                         sentMessageLi.innerHTML = `<p style="color: #333; font-weight: bold;">Sent To You ${receivedDirectMessage.message} | ${formatDateShort(receivedDirectMessage.sentOn)}</p>`;
                         sentMessageLi.className = 'received-direct-message';
 
@@ -450,6 +452,25 @@ function mainScript() {
             .catch((error) => {
                 console.log("error checking current user's email", error);
             })
+    });
+
+    socket.on('deleteReceivedDirectMessage', (senderAndMessageId) => {
+        const sentFrom = senderAndMessageId.sentFrom;
+        const messageId = senderAndMessageId.messageId;
+        const indexToRemove = currentlyAvailableUsers[sentFrom].sentMessages.findIndex(message => message._id == messageId);
+
+        currentlyAvailableUsers[sentFrom].sentMessages.splice(indexToRemove, 1);
+        
+        const sendDirectMessageContainer = document.getElementById('sendDirectMessageContainer');
+
+        if (sendDirectMessageContainer) {
+            console.log('sendDirectMessageContainer', sendDirectMessageContainer);
+            const DmUl = sendDirectMessageContainer.querySelector('ul');
+
+            const liToRemove = DmUl.querySelector(`li[data-message-id="${messageId}"]`);
+
+            liToRemove.remove();
+        }
     });
     
     socket.emit('getNewMessages');

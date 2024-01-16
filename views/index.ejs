@@ -140,13 +140,13 @@
                                 sendDirectMessageContainer.style.widows = '600px';
                                 sendDirectMessageContainer.style.overflowY = 'auto';
 
-                                /* sendDirectMessageContainer.addEventListener('mouseleave', () => {
+                                sendDirectMessageContainer.addEventListener('mouseleave', () => {
                                     sendDirectMessageContainer.className = "animate__animated animate__fadeOut";
 
                                     setTimeout(() => {
                                         sendDirectMessageContainer.remove();
                                     }, 600);
-                                }); */
+                                });
 
                                 const allMessagesUl = document.createElement('ul');
                                 allMessagesUl.style.margin = '0';
@@ -161,7 +161,8 @@
                                 currentlyAvailableUsers[user.email].receivedMessages.forEach((receivedMessage) => {
 
                                     const receivedMessageLi = document.createElement('li');
-                                    console.log(receivedMessage);
+                                    
+                                    receivedMessageLi.dataset.messageId = receivedMessage._id;
                                     receivedMessageLi.innerHTML = `<p style="color: #333; font-weight: bold;">Sent From You ${receivedMessage.message} | ${formatDateShort(receivedMessage.sentOn)}</p>`;
                                     receivedMessageLi.className = 'sent-direct-message';
 
@@ -173,6 +174,9 @@
                                     deleteBtn.textContent = 'Delete';
                                     deleteBtn.addEventListener('click', (e) => {
                                                 e.preventDefault();
+
+                                                const indexToRemove = currentlyAvailableUsers[user.email].receivedMessages.findIndex(message => message._id == receivedMessage._id);
+                                                currentlyAvailableUsers[user.email].receivedMessages.splice(indexToRemove, 1);
 
                                                 axios.delete(`/deleteDirectMessage?id=${receivedMessage._id}&sentTo=${user.email}&_method=DELETE`)
                                                     .then(() => {
@@ -194,6 +198,7 @@
                                 currentlyAvailableUsers[user.email].sentMessages.forEach((sentMessage) => {
                                     const sentMessageLi = document.createElement('li');
 
+                                    sentMessageLi.dataset.messageId = sentMessage._id;
                                     sentMessageLi.innerHTML = `<p style="color: #333; font-weight: bold;">Sent To You ${sentMessage.message} | ${sentMessage.sentOn}</p>`;
                                     sentMessageLi.className = 'received-direct-message';
 
@@ -230,6 +235,7 @@
                                             const resMessageId = res.data._id;
 
                                             const receivedMessageClientLi = document.createElement('li');
+                                            receivedMessageClientLi.dataset.messageId = resMessageId;
                                             receivedMessageClientLi.innerHTML = `<p style="color: #333; font-weight: bold;">Sent From You ${resMessage} | ${formatDateShort(new Date())}</p>`;
                                             receivedMessageClientLi.className = 'received-direct-message';
                                             inputInsideForm.value = '';
