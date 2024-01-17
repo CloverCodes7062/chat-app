@@ -499,16 +499,18 @@ io.on('connection', (socket) => {
         socket.broadcast.emit('recieveSentBackPeerId', peerId);
     })
 
-    socket.on('getNewMessages', async () => {
-        console.log('Get New Messages Called');
-        const messages = await Messages.find().exec()
-        .then(messages => messages.map(message => { 
-            return { 
-                sentBy: message.sentBy, sentOn: message.sentOn, message: message.message, id: message._id.toString(), name: message.name, sentByPicture: message.profilePicture 
-            }
-        }));
-    
-        io.emit('resetChatMessages', messages);
+    socket.on('getNewMessages', async (mainMessagesLoaded) => {
+        if (!mainMessagesLoaded) {
+            console.log('Get New Messages Called', mainMessagesLoaded);
+            const messages = await Messages.find().exec()
+            .then(messages => messages.map(message => { 
+                return { 
+                    sentBy: message.sentBy, sentOn: message.sentOn, message: message.message, id: message._id.toString(), name: message.name, sentByPicture: message.profilePicture 
+                }
+            }));
+        
+            io.emit('resetChatMessages', messages);
+        }
     })
 
     socket.on('sendStopRemoteStream', (streamId) => {

@@ -67,6 +67,7 @@ function mainScript() {
     
     });
 
+    let mainMessagesLoaded = false;
     let audioStream;
     let screenStream;
     let peerId;
@@ -235,112 +236,115 @@ function mainScript() {
     
     socket.on('resetChatMessages', async (messages) => {
         console.log('resetChatMessages called');
+        if (!mainMessagesLoaded) {
+            console.log('Setting mainMessagesLoaded = true');
+            mainMessagesLoaded = true;
+            const messagesContainer = document.getElementById('messages-container');
+            const formPreventDefaultPOST = document.getElementById('preventDefault-POST');
 
-        const messagesContainer = document.getElementById('messages-container');
-        const formPreventDefaultPOST = document.getElementById('preventDefault-POST');
+            const messagesList = document.createElement('ul');
+            messagesList.id = 'messagesList';
+            messagesList.innerHTML = '';
 
-        const messagesList = document.createElement('ul');
-        messagesList.id = 'messagesList';
-        messagesList.innerHTML = '';
+            messages.forEach((message) => {
+                const formattedDate = formatDate(message.sentOn);
+                const listItem = document.createElement('div');
+                listItem.style.position = "relative";
 
-        messages.forEach((message) => {
-            const formattedDate = formatDate(message.sentOn);
-            const listItem = document.createElement('div');
-            listItem.style.position = "relative";
+                const uint8Array = new Uint8Array(message.sentByPicture.data);
+                const base64String = btoa(String.fromCharCode.apply(null, uint8Array));
+                const moreDetailsP = `
+                <p>Sent by ${message.name}</p>
+                <p>${message.sentBy}</p>
+                `;
+                const formattedDateShort = formatDateShort(message.sentOn);
 
-            const uint8Array = new Uint8Array(message.sentByPicture.data);
-            const base64String = btoa(String.fromCharCode.apply(null, uint8Array));
-            const moreDetailsP = `
-            <p>Sent by ${message.name}</p>
-            <p>${message.sentBy}</p>
-            `;
-            const formattedDateShort = formatDateShort(message.sentOn);
+                const moreDetailsContainer = document.createElement('div');
+                moreDetailsContainer.id = 'more-details-container';
+                moreDetailsContainer.className = 'animate__animated animate__fadeIn'
+                moreDetailsContainer.style.position = 'absolute';
+                moreDetailsContainer.style.zIndex = '1000'
+                moreDetailsContainer.innerHTML = moreDetailsP;
 
-            const moreDetailsContainer = document.createElement('div');
-            moreDetailsContainer.id = 'more-details-container';
-            moreDetailsContainer.className = 'animate__animated animate__fadeIn'
-            moreDetailsContainer.style.position = 'absolute';
-            moreDetailsContainer.style.zIndex = '1000'
-            moreDetailsContainer.innerHTML = moreDetailsP;
+                listItem.innerHTML = `
+                <li class="msg-li">
+                    <p class="msg-date">${formattedDateShort}</p>
+                    <div class="msg-img-p-container">
+                        <img 
+                            src="data:${message.sentByPicture.contentType};base64,${base64String}"
+                            width="45" 
+                            height="45" 
+                            style="border-radius: 50%;"
+                        >
+                        <p class="msg-body">${message.message}</p>
+                    </div>
+                </li>
+                `;
 
-            listItem.innerHTML = `
-            <li class="msg-li">
-                <p class="msg-date">${formattedDateShort}</p>
-                <div class="msg-img-p-container">
-                    <img 
-                        src="data:${message.sentByPicture.contentType};base64,${base64String}"
-                        width="45" 
-                        height="45" 
-                        style="border-radius: 50%;"
-                    >
-                    <p class="msg-body">${message.message}</p>
-                </div>
-            </li>
-            `;
+                listItem.append(moreDetailsContainer);
+                listItem.addEventListener('mouseenter', () => {
+                    moreDetailsContainer.style.display = 'flex';
+                    moreDetailsContainer.style.pointerEvents = 'auto';
+                });
 
-            listItem.append(moreDetailsContainer);
-            listItem.addEventListener('mouseenter', () => {
-                moreDetailsContainer.style.display = 'flex';
-                moreDetailsContainer.style.pointerEvents = 'auto';
-            });
+                listItem.addEventListener('mouseleave', () => {
+                    moreDetailsContainer.style.display = 'none';
+                    moreDetailsContainer.style.pointerEvents = 'none';
+                });
 
-            listItem.addEventListener('mouseleave', () => {
-                moreDetailsContainer.style.display = 'none';
-                moreDetailsContainer.style.pointerEvents = 'none';
-            });
+                messagesList.appendChild(listItem);
+                listItem.dataset.messageId = message.id;
+                axios.get(`/canDelete?id=${message.id}`)
+                    .then((response) => {
+                        if (response.status == 204) {
+                            listItem.className = 'chat-msg sent-msg';
 
-            messagesList.appendChild(listItem);
-            listItem.dataset.messageId = message.id;
-            axios.get(`/canDelete?id=${message.id}`)
-                .then((response) => {
-                    if (response.status == 204) {
-                        listItem.className = 'chat-msg sent-msg';
+                            const computedStyle = getComputedStyle(listItem);
+                            moreDetailsContainer.style.right = `${parseFloat(computedStyle.width) + 50}px`;
+                            moreDetailsContainer.style.backgroundColor = 'rgb(51,10,105)';
 
+                            const deleteForm = document.createElement('form');
+                            deleteForm.action = `/delete-message?id=${message.id}`;
+                            deleteForm.className = 'preventDefault-DELETE'
+                            deleteForm.innerHTML = `<button type="submit" class="delete-msg-btn">Delete</button>`;
+                            deleteForm.addEventListener('submit', (event) => {
+                                event.preventDefault();
+                                const delUrl = deleteForm.action;
+                                console.log('delUrl', delUrl);
+        
+                                axios.delete(delUrl)
+                                    .then(() => {
+                                        console.log('Message Deleted from DB');
+                                    })
+                                    .catch((error) => {
+                                        console.error('Server Error Delete Message');
+                                    });
+                            });
+                            listItem.appendChild(deleteForm);
+                        } else {
+                            console.error('.status not 204', response.status);
+                        }
+                    })
+                    .catch((error) => {
+                        listItem.className = 'chat-msg received-msg';
                         const computedStyle = getComputedStyle(listItem);
-                        moreDetailsContainer.style.right = `${parseFloat(computedStyle.width) + 50}px`;
-                        moreDetailsContainer.style.backgroundColor = 'rgb(51,10,105)';
+                        moreDetailsContainer.style.left = `${parseFloat(computedStyle.width) + 50}px`;
+                        moreDetailsContainer.style.backgroundColor = 'rgb(155,74,206)';
+                        console.error('Error Checking canDelete', error);
+                    })
+            });
 
-                        const deleteForm = document.createElement('form');
-                        deleteForm.action = `/delete-message?id=${message.id}`;
-                        deleteForm.className = 'preventDefault-DELETE'
-                        deleteForm.innerHTML = `<button type="submit" class="delete-msg-btn">Delete</button>`;
-                        deleteForm.addEventListener('submit', (event) => {
-                            event.preventDefault();
-                            const delUrl = deleteForm.action;
-                            console.log('delUrl', delUrl);
-    
-                            axios.delete(delUrl)
-                                .then(() => {
-                                    console.log('Message Deleted from DB');
-                                })
-                                .catch((error) => {
-                                    console.error('Server Error Delete Message');
-                                });
-                        });
-                        listItem.appendChild(deleteForm);
-                    } else {
-                        console.error('.status not 204', response.status);
-                    }
-                })
-                .catch((error) => {
-                    listItem.className = 'chat-msg received-msg';
-                    const computedStyle = getComputedStyle(listItem);
-                    moreDetailsContainer.style.left = `${parseFloat(computedStyle.width) + 50}px`;
-                    moreDetailsContainer.style.backgroundColor = 'rgb(155,74,206)';
-                    console.error('Error Checking canDelete', error);
-                })
-        });
+            const oldMessagesList = document.getElementById('messagesList');
 
-        const oldMessagesList = document.getElementById('messagesList');
+            if (oldMessagesList) {
+                console.log('oldMessagesList', oldMessagesList);
+                oldMessagesList.remove();
+            }
 
-        if (oldMessagesList) {
-            console.log('oldMessagesList', oldMessagesList);
-            oldMessagesList.remove();
+            messagesContainer.insertBefore(messagesList, formPreventDefaultPOST);
+
+            console.log('messagesList', messagesList);
         }
-
-        messagesContainer.insertBefore(messagesList, formPreventDefaultPOST);
-
-        console.log('messagesList', messagesList);
     });
 
     socket.on('receiveStopRemoteAudio', (audioIdToStop) => {
@@ -453,8 +457,8 @@ function mainScript() {
                         height="50" 
                         style="border-radius: 50%; pointer-events: none;"
                         >
-                        <p class="dm-p-message" style="color: #fff; font-weight: bold;">${receivedDirectMessage.message}</p>
-                        <p class="dm-p-time" style="color: #fff; font-weight: bold;">${formatDateShort(new Date(receivedDirectMessage.sentOn))}</p>
+                        <p class="dm-p-message" style="color: #fff;">${receivedDirectMessage.message}</p>
+                        <p class="dm-p-time" style="color: #fff;">${formatDateShort(new Date(receivedDirectMessage.sentOn))}</p>
                         `;
                         sentMessageLi.className = 'received-direct-message';
 
@@ -486,7 +490,7 @@ function mainScript() {
         }
     });
     
-    socket.emit('getNewMessages');
+    socket.emit('getNewMessages', mainMessagesLoaded);
     
     peer.on('call', (call) => {
         console.log('Incoming Call');
