@@ -60,6 +60,7 @@
     </main>
     <section class="right-section">
         <div id="directMessageContainer" style="display: none; pointer-events: none; position: fixed; top: 2vh; right: 6vw; background-color: #fff; border-radius: 20px; box-shadow: 0 0 10px rgba(0, 0, 0, .2);"></div>
+
         <script type="text/javascript">
             document.addEventListener('DOMContentLoaded', () => {
                 function formatDateShort(date) {
@@ -81,6 +82,23 @@
 
                 const directMessageContainer = document.getElementById('directMessageContainer');
                 directMessageContainer.style.padding = '15px';
+
+                const closeDirectMessagesContainerBtn = document.createElement('button');
+                closeDirectMessagesContainerBtn.textContent = 'Close';
+                closeDirectMessagesContainerBtn.style.position = 'absolute';
+                closeDirectMessagesContainerBtn.style.top = '2px';
+                closeDirectMessagesContainerBtn.style.left = '2px';
+                closeDirectMessagesContainerBtn.style.borderRadius = '10px';
+
+                closeDirectMessagesContainerBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+
+                    if (directMessageContainer) {
+                        directMessageContainer.classList.toggle('showDirectMessageContainer');
+                    }
+                });
+
+                directMessageContainer.appendChild(closeDirectMessagesContainerBtn);
 
                 const openDirectMessagesContainer = document.getElementById('openDirectMessagesContainer');
                 openDirectMessagesContainer.addEventListener('click', (e) => {
@@ -134,19 +152,20 @@
                                 sendDirectMessageContainer.style.backgroundColor = '#fff';
                                 sendDirectMessageContainer.style.borderRadius = '20px';
                                 sendDirectMessageContainer.style.position = 'fixed';
+                                sendDirectMessageContainer.style.zIndex = '1500';
                                 sendDirectMessageContainer.style.top = '2vh';
                                 sendDirectMessageContainer.style.right = '24vw';
                                 sendDirectMessageContainer.style.height = '54vh'
-                                sendDirectMessageContainer.style.widows = '600px';
+                                sendDirectMessageContainer.style.width = '400px';
                                 sendDirectMessageContainer.style.overflowY = 'auto';
 
-                                /* sendDirectMessageContainer.addEventListener('mouseleave', () => {
+                                sendDirectMessageContainer.addEventListener('mouseleave', () => {
                                     sendDirectMessageContainer.className = "animate__animated animate__fadeOut";
 
                                     setTimeout(() => {
                                         sendDirectMessageContainer.remove();
                                     }, 600);
-                                }); Reenable later! */
+                                });
 
                                 const allMessagesUl = document.createElement('ul');
                                 allMessagesUl.style.margin = '0';
@@ -175,7 +194,8 @@
                                     height="50" 
                                     style="border-radius: 50%; pointer-events: none;"
                                     >
-                                    <p style="color: #333; font-weight: bold;">Sent From You ${receivedMessage.message} | ${formatDateShort(new Date(receivedMessage.sentOn))}</p>
+                                    <p class="dm-p-message" style="color: #fff;">${receivedMessage.message}</p>
+                                    <p class="dm-p-time" style="color: #fff;">${formatDateShort(new Date(receivedMessage.sentOn))}</p>
                                     `;
 
                                     receivedMessageLi.className = 'sent-direct-message';
@@ -226,7 +246,8 @@
                                     height="50" 
                                     style="border-radius: 50%; pointer-events: none;"
                                     >
-                                    <p style="color: #333; font-weight: bold;">Sent To You ${sentMessage.message} | ${formatDateShort(new Date(sentMessage.sentOn))}</p>
+                                    <p class="dm-p-message" style="color: #fff;">${sentMessage.message}</p>
+                                    <p class="dm-p-time" style="color: #fff;">${formatDateShort(new Date(sentMessage.sentOn))}</p>
                                     `;
                                     sentMessageLi.className = 'received-direct-message';
 
@@ -235,17 +256,21 @@
 
                                 sendDirectMessageContainer.innerHTML =
                                 `
-                                <img
-                                    src="data:${user.profilePicture.contentType};base64,${base64StringProfilePicture}" 
-                                    width="50" 
-                                    height="50" 
-                                    style="border-radius: 50%; pointer-events: none;"
-                                >
-                                <p style="text-align: center; color: #333; font-weight: bold;">${user.name}</p>
+                                <div id="DmProfilePicNameDiv">
+                                    <img
+                                        src="data:${user.profilePicture.contentType};base64,${base64StringProfilePicture}" 
+                                        width="50" 
+                                        height="50" 
+                                        style="border-radius: 50%; pointer-events: none;"
+                                    >
+                                    <p style="text-align: center; color: #333; font-weight: bold;">${user.name}</p>
+                                </div>
                                 <form action="/sendDirectMessage?sendingTo=${user.email}" method="POST" style="display: flex; flex-direction: column; gap: 10px;">
-                                        <div>
-                                            <input name="message">
-                                            <button type="submit">Send Msg</button>
+                                        <div id="sendDirectMsgDiv">
+                                            <input name="message" type="text" placeholder="Enter a Message" required>
+                                            <button type="submit" style="background-color: #fff; border-radius: 10px;">
+                                                <i class="bx bxs-send" style="color: #333; font-size: 24px; background-color: transparent !important; border-radius: 10px;"></i>
+                                            </button>
                                         </div>
                                 </form>`;
 
@@ -275,10 +300,11 @@
                                                 height="50" 
                                                 style="border-radius: 50%; pointer-events: none;"
                                             >
-                                            <p style="color: #333; font-weight: bold;">Sent From You ${resMessage} | ${formatDateShort(new Date())}</p>
+                                            <p class="dm-p-message" style="color: #fff;">${resMessage}</p>
+                                            <p class="dm-p-time" style="color: #fff;">${formatDateShort(new Date())}</p>
                                             `;
-                                            
-                                            receivedMessageClientLi.className = 'received-direct-message';
+
+                                            receivedMessageClientLi.className = 'sent-direct-message';
                                             inputInsideForm.value = '';
 
                                             const deleteForm = document.createElement('form');

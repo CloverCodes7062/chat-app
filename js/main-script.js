@@ -453,7 +453,9 @@ function mainScript() {
                         height="50" 
                         style="border-radius: 50%; pointer-events: none;"
                         >
-                        <p style="color: #333; font-weight: bold;">Sent To You ${receivedDirectMessage.message} | ${formatDateShort(new Date(receivedDirectMessage.sentOn))}</p>`;
+                        <p class="dm-p-message" style="color: #fff; font-weight: bold;">${receivedDirectMessage.message}</p>
+                        <p class="dm-p-time" style="color: #fff; font-weight: bold;">${formatDateShort(new Date(receivedDirectMessage.sentOn))}</p>
+                        `;
                         sentMessageLi.className = 'received-direct-message';
 
                         DmUl.appendChild(sentMessageLi);
